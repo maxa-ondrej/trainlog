@@ -3,9 +3,18 @@
 {% block title %}TrainLog — vítejte{% endblock %}
 
 {% block body %}
-    <main style="font-family: system-ui, sans-serif; max-width: 640px; margin: 4rem auto; padding: 0 1rem;">
-        <h1>🏋️ TrainLog</h1>
-        <p>Webová aplikace pro vedení tréninkového deníku.</p>
-        <p><em>Hello, world!</em></p>
-    </main>
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="display-5 mb-3">🏋️ TrainLog</h1>
+            <p class="lead">Webová aplikace pro vedení tréninkového deníku.</p>
+            {% if not app.user %}
+                <p>
+                    <a class="btn btn-primary" href="{{ path('app_register') }}">Začít zdarma</a>
+                    <a class="btn btn-outline-secondary" href="{{ path('app_login') }}">Přihlásit se</a>
+                </p>
+            {% else %}
+                <p>Vítejte zpět, {{ app.user.name }}.</p>
+            {% endif %}
+        </div>
+    </div>
 {% endblock %}

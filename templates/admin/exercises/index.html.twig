@@ -3,45 +3,56 @@
 {% block title %}TrainLog — cviky{% endblock %}
 
 {% block body %}
-    <main style="font-family: system-ui, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem;">
-        <p><a href="{{ path('admin_home') }}">← Administrace</a></p>
-        <h1>Cviky</h1>
-        <table style="width: 100%; border-collapse: collapse;">
+    <p><a href="{{ path('admin_home') }}" class="text-decoration-none">← Administrace</a></p>
+    <h1 class="h3 mb-4">Cviky</h1>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
             <thead>
-                <tr style="border-bottom: 1px solid #ccc; text-align: left;">
-                    <th style="padding: 0.5rem;">Název</th>
-                    <th style="padding: 0.5rem;">Vlastník</th>
-                    <th style="padding: 0.5rem;">Veřejný</th>
-                    <th style="padding: 0.5rem;">Svalové partie</th>
-                    <th style="padding: 0.5rem;">Akce</th>
+                <tr>
+                    <th>Název</th>
+                    <th>Vlastník</th>
+                    <th>Veřejný</th>
+                    <th>Svalové partie</th>
+                    <th class="text-end">Akce</th>
                 </tr>
             </thead>
             <tbody>
                 {% for exercise in exercises %}
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 0.5rem;">{{ exercise.name }}</td>
-                        <td style="padding: 0.5rem;">{{ exercise.owner ? exercise.owner.email : '—' }}</td>
-                        <td style="padding: 0.5rem;">{{ exercise.isPublic ? 'ano' : 'ne' }}</td>
-                        <td style="padding: 0.5rem;">
-                            {% for mg in exercise.muscleGroups %}{{ mg.name }}{% if not loop.last %}, {% endif %}{% endfor %}
+                    <tr>
+                        <td>{{ exercise.name }}</td>
+                        <td>{{ exercise.owner ? exercise.owner.email : '—' }}</td>
+                        <td>
+                            {% if exercise.isPublic %}
+                                <span class="badge text-bg-success">veřejný</span>
+                            {% else %}
+                                <span class="badge text-bg-secondary">soukromý</span>
+                            {% endif %}
                         </td>
-                        <td style="padding: 0.5rem; display: flex; gap: 0.5rem;">
-                            <form method="post" action="{{ path('admin_exercise_toggle_public', {id: exercise.id}) }}" style="margin:0;">
+                        <td>
+                            {% for mg in exercise.muscleGroups %}
+                                <span class="badge text-bg-light border">{{ mg.name }}</span>
+                            {% endfor %}
+                        </td>
+                        <td class="text-end">
+                            <form method="post" action="{{ path('admin_exercise_toggle_public', {id: exercise.id}) }}" class="d-inline">
                                 <input type="hidden" name="_token" value="{{ csrf_token('admin_exercise_toggle_public_' ~ exercise.id) }}">
-                                <button type="submit">{{ exercise.isPublic ? 'Skrýt' : 'Zveřejnit' }}</button>
+                                <button type="submit" class="btn btn-sm btn-outline-primary">
+                                    {{ exercise.isPublic ? 'Skrýt' : 'Zveřejnit' }}
+                                </button>
                             </form>
                             {% if exercise.isPublic %}
-                                <form method="post" action="{{ path('admin_exercise_delete', {id: exercise.id}) }}" style="margin:0;" onsubmit="return confirm('Opravdu smazat cvik „{{ exercise.name|e('js') }}"?');">
+                                <form method="post" action="{{ path('admin_exercise_delete', {id: exercise.id}) }}" class="d-inline"
+                                      onsubmit="return confirm('Opravdu smazat cvik „{{ exercise.name|e('js') }}"?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('admin_exercise_delete_' ~ exercise.id) }}">
-                                    <button type="submit">Smazat</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Smazat</button>
                                 </form>
                             {% endif %}
                         </td>
                     </tr>
                 {% else %}
-                    <tr><td colspan="5" style="padding: 0.5rem;"><em>Žádné cviky.</em></td></tr>
+                    <tr><td colspan="5" class="text-secondary"><em>Žádné cviky.</em></td></tr>
                 {% endfor %}
             </tbody>
         </table>
-    </main>
+    </div>
 {% endblock %}
