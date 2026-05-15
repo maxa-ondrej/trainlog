@@ -3,11 +3,15 @@
 {% block title %}TrainLog — administrace{% endblock %}
 
 {% block body %}
-    <main style="font-family: system-ui, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem;">
-        <h1>Administrace</h1>
-        <ul>
-            <li><a href="{{ path('admin_user_index') }}">Uživatelé</a></li>
-            <li><a href="{{ path('admin_exercise_index') }}">Cviky</a></li>
-        </ul>
-    </main>
+    <h1 class="h3 mb-4">Administrace</h1>
+    <div class="list-group">
+        <a href="{{ path('admin_user_index') }}" class="list-group-item list-group-item-action">
+            <strong>Uživatelé</strong><br>
+            <span class="text-secondary">Zobrazení uživatelů, změna role, mazání</span>
+        </a>
+        <a href="{{ path('admin_exercise_index') }}" class="list-group-item list-group-item-action">
+            <strong>Cviky</strong><br>
+            <span class="text-secondary">Správa veřejnosti cviků, mazání veřejných cviků</span>
+        </a>
+    </div>
 {% endblock %}

@@ -3,45 +3,54 @@
 {% block title %}TrainLog — uživatelé{% endblock %}
 
 {% block body %}
-    <main style="font-family: system-ui, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem;">
-        <p><a href="{{ path('admin_home') }}">← Administrace</a></p>
-        <h1>Uživatelé</h1>
-        <table style="width: 100%; border-collapse: collapse;">
+    <p><a href="{{ path('admin_home') }}" class="text-decoration-none">← Administrace</a></p>
+    <h1 class="h3 mb-4">Uživatelé</h1>
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
             <thead>
-                <tr style="border-bottom: 1px solid #ccc; text-align: left;">
-                    <th style="padding: 0.5rem;">E-mail</th>
-                    <th style="padding: 0.5rem;">Jméno</th>
-                    <th style="padding: 0.5rem;">Role</th>
-                    <th style="padding: 0.5rem;">Registrace</th>
-                    <th style="padding: 0.5rem;">Akce</th>
+                <tr>
+                    <th>E-mail</th>
+                    <th>Jméno</th>
+                    <th>Role</th>
+                    <th>Registrace</th>
+                    <th class="text-end">Akce</th>
                 </tr>
             </thead>
             <tbody>
                 {% for user in users %}
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 0.5rem;">{{ user.email }}</td>
-                        <td style="padding: 0.5rem;">{{ user.name }}</td>
-                        <td style="padding: 0.5rem;">{{ user.role.value }}</td>
-                        <td style="padding: 0.5rem;">{{ user.createdAt|date('Y-m-d') }}</td>
-                        <td style="padding: 0.5rem; display: flex; gap: 0.5rem;">
+                    <tr>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>
+                            {% if user.role.value == 'ROLE_ADMIN' %}
+                                <span class="badge text-bg-primary">admin</span>
+                            {% else %}
+                                <span class="badge text-bg-secondary">user</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.createdAt|date('Y-m-d') }}</td>
+                        <td class="text-end">
                             {% if user != app.user %}
-                                <form method="post" action="{{ path('admin_user_toggle_role', {id: user.id}) }}" style="margin:0;">
+                                <form method="post" action="{{ path('admin_user_toggle_role', {id: user.id}) }}" class="d-inline">
                                     <input type="hidden" name="_token" value="{{ csrf_token('admin_user_toggle_role_' ~ user.id) }}">
-                                    <button type="submit">{{ user.role.value == 'ROLE_ADMIN' ? 'Degradovat' : 'Povýšit' }}</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">
+                                        {{ user.role.value == 'ROLE_ADMIN' ? 'Degradovat' : 'Povýšit' }}
+                                    </button>
                                 </form>
-                                <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}" style="margin:0;" onsubmit="return confirm('Opravdu smazat uživatele {{ user.email|e('js') }}?');">
+                                <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}" class="d-inline"
+                                      onsubmit="return confirm('Opravdu smazat uživatele {{ user.email|e('js') }}?');">
                                     <input type="hidden" name="_token" value="{{ csrf_token('admin_user_delete_' ~ user.id) }}">
-                                    <button type="submit">Smazat</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Smazat</button>
                                 </form>
                             {% else %}
-                                <em>(vy)</em>
+                                <span class="text-secondary">(vy)</span>
                             {% endif %}
                         </td>
                     </tr>
                 {% else %}
-                    <tr><td colspan="5" style="padding: 0.5rem;"><em>Žádní uživatelé.</em></td></tr>
+                    <tr><td colspan="5" class="text-secondary"><em>Žádní uživatelé.</em></td></tr>
                 {% endfor %}
             </tbody>
         </table>
-    </main>
+    </div>
 {% endblock %}

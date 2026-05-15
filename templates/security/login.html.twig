@@ -3,30 +3,32 @@
 {% block title %}TrainLog — přihlášení{% endblock %}
 
 {% block body %}
-    <main style="font-family: system-ui, sans-serif; max-width: 480px; margin: 4rem auto; padding: 0 1rem;">
-        <h1>Přihlášení</h1>
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <h1 class="h3 mb-3">Přihlášení</h1>
 
-        {% if error %}
-            <div style="color: #b00; margin-bottom: 1rem;">
-                {{ error.messageKey|trans(error.messageData, 'security') }}
-            </div>
-        {% endif %}
+            {% if error %}
+                <div class="alert alert-danger" role="alert">
+                    {{ error.messageKey|trans(error.messageData, 'security') }}
+                </div>
+            {% endif %}
 
-        <form method="post">
-            <div>
-                <label for="username">E-mail</label>
-                <input type="email" name="_username" id="username" value="{{ last_username }}" required autofocus>
-            </div>
-            <div>
-                <label for="password">Heslo</label>
-                <input type="password" name="_password" id="password" required>
-            </div>
-            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-            <button type="submit">Přihlásit se</button>
-        </form>
+            <form method="post">
+                <div class="mb-3">
+                    <label for="username" class="form-label">E-mail</label>
+                    <input type="email" class="form-control" name="_username" id="username" value="{{ last_username }}" required autofocus>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Heslo</label>
+                    <input type="password" class="form-control" name="_password" id="password" required>
+                </div>
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                <button type="submit" class="btn btn-primary">Přihlásit se</button>
+            </form>
 
-        <p style="margin-top: 1rem;">
-            Nemáte účet? <a href="{{ path('app_register') }}">Zaregistrujte se</a>.
-        </p>
-    </main>
+            <p class="mt-3 text-secondary">
+                Nemáte účet? <a href="{{ path('app_register') }}">Zaregistrujte se</a>.
+            </p>
+        </div>
+    </div>
 {% endblock %}
