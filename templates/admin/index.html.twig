@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TrainLog — administrace{% endblock %}
+
+{% block body %}
+    <main style="font-family: system-ui, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem;">
+        <h1>Administrace</h1>
+        <ul>
+            <li><a href="{{ path('admin_user_index') }}">Uživatelé</a></li>
+            <li><a href="{{ path('admin_exercise_index') }}">Cviky</a></li>
+        </ul>
+    </main>
+{% endblock %}
