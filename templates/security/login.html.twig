@@ -1,0 +1,32 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TrainLog — přihlášení{% endblock %}
+
+{% block body %}
+    <main style="font-family: system-ui, sans-serif; max-width: 480px; margin: 4rem auto; padding: 0 1rem;">
+        <h1>Přihlášení</h1>
+
+        {% if error %}
+            <div style="color: #b00; margin-bottom: 1rem;">
+                {{ error.messageKey|trans(error.messageData, 'security') }}
+            </div>
+        {% endif %}
+
+        <form method="post">
+            <div>
+                <label for="username">E-mail</label>
+                <input type="email" name="_username" id="username" value="{{ last_username }}" required autofocus>
+            </div>
+            <div>
+                <label for="password">Heslo</label>
+                <input type="password" name="_password" id="password" required>
+            </div>
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+            <button type="submit">Přihlásit se</button>
+        </form>
+
+        <p style="margin-top: 1rem;">
+            Nemáte účet? <a href="{{ path('app_register') }}">Zaregistrujte se</a>.
+        </p>
+    </main>
+{% endblock %}
