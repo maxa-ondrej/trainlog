@@ -33,6 +33,10 @@ class MuscleGroup {
         $this->exercises = new ArrayCollection();
     }
 
+    public function __toString(): string {
+        return $this->name;
+    }
+
     public function getId(): ?int {
         return $this->id;
     }
@@ -48,9 +52,5 @@ class MuscleGroup {
     /** @return Collection<int, Exercise> */
     public function getExercises(): Collection {
         return $this->exercises;
-    }
-
-    public function __toString(): string {
-        return $this->name;
     }
 }

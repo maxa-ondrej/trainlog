@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TrainLog — {{ workout.name }}{% endblock %}
+
+{% block body %}
+    <p><a href="{{ path('workout_index') }}" class="text-decoration-none">← Tréninky</a></p>
+
+    <div class="d-flex justify-content-between align-items-start mb-3">
+        <div>
+            <h1 class="h3 mb-1">{{ workout.name }}</h1>
+            <div class="text-secondary">
+                {{ workout.performedAt|date('Y-m-d') }}
+                {% if workout.durationMinutes %} · {{ workout.durationMinutes }} min{% endif %}
+                {% if workout.isTemplate %}<span class="badge text-bg-info ms-2">šablona</span>{% endif %}
+            </div>
+        </div>
+        <div>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ path('workout_export_pdf', {id: workout.id}) }}">PDF</a>
+            {% if is_granted('WORKOUT_EDIT', workout) %}
+                <a class="btn btn-sm btn-outline-secondary" href="{{ path('workout_edit', {id: workout.id}) }}">Upravit</a>
+            {% endif %}
+            {% if is_granted('WORKOUT_DELETE', workout) %}
+                <form method="post" action="{{ path('workout_delete', {id: workout.id}) }}" class="d-inline"
+                      onsubmit="return confirm('Opravdu smazat trénink „{{ workout.name|e('js') }}"?');">
+                    <input type="hidden" name="_token" value="{{ csrf_token('workout_delete_' ~ workout.id) }}">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Smazat</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if workout.note %}
+        <div class="card card-body mb-4">{{ workout.note|nl2br }}</div>
+    {% endif %}
+
+    {% set workoutTotalVolume = 0 %}
+    {% for s in workout.sets %}{% set workoutTotalVolume = workoutTotalVolume + s.volume %}{% endfor %}
+
+    {% if byExercise is empty %}
+        <p class="text-secondary"><em>Žádné série.</em></p>
+    {% else %}
+        {% for entry in byExercise %}
+            {% set ex = entry.exercise %}
+            {% set sets = entry.sets %}
+            {% set exVolume = 0 %}
+            {% set maxWeight = 0 %}
+            {% set topSet = null %}
+            {% for s in sets %}
+                {% set exVolume = exVolume + s.volume %}
+                {% if s.weightKgAsFloat > maxWeight %}{% set maxWeight = s.weightKgAsFloat %}{% endif %}
+                {% if topSet is null or s.volume > topSet.volume %}{% set topSet = s %}{% endif %}
+            {% endfor %}
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between">
+                    <a href="{{ path('exercise_show', {id: ex.id}) }}" class="text-decoration-none fw-semibold">{{ ex.name }}</a>
+                    <span class="text-secondary small">
+                        {{ sets|length }} sad · max {{ maxWeight }} kg
+                        {% if topSet %} · top sada {{ topSet.reps }}×{{ topSet.weightKg }}{% endif %}
+                        · objem {{ exVolume|number_format(0, ',', ' ') }} kg
+                    </span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th style="width: 5rem">Sada</th>
+                                <th>Opak.</th>
+                                <th>Váha (kg)</th>
+                                <th>RPE</th>
+                                <th>Objem</th>
+                                {% if prMap is defined %}<th></th>{% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in sets %}
+                                <tr>
+                                    <td>{{ s.position }}</td>
+                                    <td>{{ s.reps }}</td>
+                                    <td>{{ s.weightKg }}</td>
+                                    <td>{{ s.rpe ?? '—' }}</td>
+                                    <td>{{ s.volume|number_format(0, ',', ' ') }}</td>
+                                    {% if prMap is defined and prMap[s.id] is defined %}
+                                        <td>
+                                            {% for kind in prMap[s.id] %}
+                                                <span class="badge text-bg-warning">🏆 PR — {{ kind }}</span>
+                                            {% endfor %}
+                                        </td>
+                                    {% elseif prMap is defined %}
+                                        <td></td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endfor %}
+
+        <div class="text-secondary">Celkový objem tréninku: <strong>{{ workoutTotalVolume|number_format(0, ',', ' ') }} kg</strong></div>
+    {% endif %}
+{% endblock %}

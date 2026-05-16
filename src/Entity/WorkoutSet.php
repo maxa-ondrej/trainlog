@@ -18,11 +18,11 @@ class WorkoutSet {
 
     #[ORM\ManyToOne(targetEntity: Workout::class, inversedBy: 'sets')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Workout $workout = null;
+    private Workout $workout;
 
     #[ORM\ManyToOne(targetEntity: Exercise::class, inversedBy: 'workoutSets')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Exercise $exercise = null;
+    private Exercise $exercise;
 
     #[ORM\Column]
     #[Assert\Positive]
@@ -46,18 +46,18 @@ class WorkoutSet {
     }
 
     public function getWorkout(): ?Workout {
-        return $this->workout;
+        return $this->workout ?? null;
     }
 
-    public function setWorkout(?Workout $workout): void {
+    public function setWorkout(Workout $workout): void {
         $this->workout = $workout;
     }
 
     public function getExercise(): ?Exercise {
-        return $this->exercise;
+        return $this->exercise ?? null;
     }
 
-    public function setExercise(?Exercise $exercise): void {
+    public function setExercise(Exercise $exercise): void {
         $this->exercise = $exercise;
     }
 

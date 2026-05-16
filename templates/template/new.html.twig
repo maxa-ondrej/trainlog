@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TrainLog — nová šablona{% endblock %}
+
+{% block body %}
+    <p><a href="{{ path('template_index') }}" class="text-decoration-none">← Šablony</a></p>
+    <h1 class="h3 mb-4">Nová šablona</h1>
+    {% include 'workout/_form.html.twig' with {form: form, submitLabel: 'Uložit šablonu', cancelUrl: path('template_index')} %}
+{% endblock %}

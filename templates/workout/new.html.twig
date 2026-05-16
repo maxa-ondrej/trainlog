@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TrainLog — nový trénink{% endblock %}
+
+{% block body %}
+    <p><a href="{{ path('workout_index') }}" class="text-decoration-none">← Tréninky</a></p>
+    <h1 class="h3 mb-4">Nový trénink</h1>
+    {% include 'workout/_form.html.twig' with {form: form, submitLabel: 'Uložit', cancelUrl: path('workout_index')} %}
+{% endblock %}

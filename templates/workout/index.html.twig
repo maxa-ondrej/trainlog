@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TrainLog — tréninky{% endblock %}
+
+{% block body %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Tréninky</h1>
+        <div>
+            <a class="btn btn-outline-primary btn-sm" href="{{ path('template_index') }}">Šablony</a>
+            <a class="btn btn-primary btn-sm" href="{{ path('workout_new') }}">+ Nový trénink</a>
+        </div>
+    </div>
+
+    <form method="get" class="card card-body mb-4">
+        <div class="row g-2">
+            <div class="col-md-3">
+                <label class="form-label">Od</label>
+                <input type="date" name="from" class="form-control" value="{{ from ? from|date('Y-m-d') : '' }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Do</label>
+                <input type="date" name="to" class="form-control" value="{{ to ? to|date('Y-m-d') : '' }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Cvik</label>
+                <select name="exercise" class="form-select">
+                    <option value="0">— všechny —</option>
+                    {% for ex in exercises %}
+                        <option value="{{ ex.id }}" {% if exercise and exercise.id == ex.id %}selected{% endif %}>{{ ex.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary w-100">Filtrovat</button>
+            </div>
+        </div>
+    </form>
+
+    {% if workouts is empty %}
+        <div class="alert alert-info">
+            Zatím žádné tréninky. <a href="{{ path('workout_new') }}" class="alert-link">Vytvořit první</a>
+            {% if from or to or exercise %}— nebo zrušte filtr.{% else %} nebo spustit ze <a href="{{ path('template_index') }}" class="alert-link">šablony</a>.{% endif %}
+        </div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Název</th>
+                        <th>Cviky</th>
+                        <th>Sady</th>
+                        <th>Objem (kg)</th>
+                        <th class="text-end">Akce</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for w in workouts %}
+                        {% set exerciseIds = [] %}
+                        {% set totalVolume = 0 %}
+                        {% for s in w.sets %}
+                            {% if s.exercise and s.exercise.id not in exerciseIds %}{% set exerciseIds = exerciseIds|merge([s.exercise.id]) %}{% endif %}
+                            {% set totalVolume = totalVolume + s.volume %}
+                        {% endfor %}
+                        <tr>
+                            <td>{{ w.performedAt|date('Y-m-d') }}</td>
+                            <td><a href="{{ path('workout_show', {id: w.id}) }}">{{ w.name }}</a></td>
+                            <td>{{ exerciseIds|length }}</td>
+                            <td>{{ w.sets|length }}</td>
+                            <td>{{ totalVolume|number_format(0, ',', ' ') }}</td>
+                            <td class="text-end">
+                                <a class="btn btn-sm btn-outline-primary" href="{{ path('workout_show', {id: w.id}) }}">Detail</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+{% endblock %}

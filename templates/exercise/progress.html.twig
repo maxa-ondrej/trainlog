@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TrainLog — vývoj {{ exercise.name }}{% endblock %}
+
+{% block body %}
+    <p><a href="{{ path('exercise_show', {id: exercise.id}) }}" class="text-decoration-none">← Detail cviku</a></p>
+    <h1 class="h3 mb-4">Vývoj — {{ exercise.name }}</h1>
+
+    <div data-controller="chart" data-chart-url-value="{{ path('api_exercise_progress', {id: exercise.id}) }}">
+        <div class="mb-3">
+            <div class="btn-group" role="group" aria-label="Metrika">
+                <input type="radio" class="btn-check" name="metric" id="metric-max" value="maxWeight" autocomplete="off" data-action="chart#switch" checked>
+                <label class="btn btn-outline-primary" for="metric-max">Max váha</label>
+
+                <input type="radio" class="btn-check" name="metric" id="metric-vol" value="volume" autocomplete="off" data-action="chart#switch">
+                <label class="btn btn-outline-primary" for="metric-vol">Objem</label>
+
+                <input type="radio" class="btn-check" name="metric" id="metric-1rm" value="estimated1rm" autocomplete="off" data-action="chart#switch">
+                <label class="btn btn-outline-primary" for="metric-1rm">Odhad 1RM</label>
+            </div>
+        </div>
+        <div style="position: relative; height: 360px;">
+            <canvas data-chart-target="canvas"></canvas>
+        </div>
+    </div>
+{% endblock %}
