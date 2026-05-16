@@ -1,19 +1,142 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}TrainLog — vítejte{% endblock %}
+{% block title %}TrainLog — tréninkový deník pro vážné lifty{% endblock %}
 
 {% block body %}
     {% if not app.user %}
-        <div class="row justify-content-center">
-            <div class="col-lg-8">
-                <h1 class="display-5 mb-3">🏋️ TrainLog</h1>
-                <p class="lead">Webová aplikace pro vedení tréninkového deníku.</p>
-                <p>
-                    <a class="btn btn-primary" href="{{ path('app_register') }}">Začít zdarma</a>
-                    <a class="btn btn-outline-secondary" href="{{ path('app_login') }}">Přihlásit se</a>
+        <section class="landing-hero text-center">
+            <div class="container">
+                <div class="hero-emoji">🏋️</div>
+                <h1 class="display-4 mb-3">Tréninkový deník, který drží krok&nbsp;s&nbsp;vámi</h1>
+                <p class="lead mb-4 mx-auto" style="max-width: 42rem;">
+                    Zapisujte série, sledujte vývoj výkonu na grafech, oslavujte osobní rekordy
+                    a exportujte si tréninky do PDF. Vše v jedné aplikaci — bez reklam, bez sledování.
                 </p>
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <a class="btn btn-primary btn-lg px-4" href="{{ path('app_register') }}">Začít zdarma</a>
+                    <a class="btn btn-outline-light btn-lg px-4" href="{{ path('help_index') }}">Prohlédnout návod</a>
+                </div>
             </div>
-        </div>
+        </section>
+
+        <section class="mb-5">
+            <div class="text-center mb-5">
+                <h2 class="display-6 mb-2">Co umí TrainLog?</h2>
+                <p class="text-secondary">Šest funkcí, díky kterým budete chtít každý trénink zaznamenat.</p>
+            </div>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                <div class="col">
+                    <div class="card feature-card p-4">
+                        <div class="feature-icon">📚</div>
+                        <h3 class="h5">Knihovna cviků</h3>
+                        <p class="text-secondary mb-0 small">
+                            Sdílené veřejné cviky plus vaše vlastní. Filtrujte podle svalových partií —
+                            prsa, záda, ramena, kvadricepsy a dalších osm.
+                        </p>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card feature-card p-4">
+                        <div class="feature-icon">🏋️</div>
+                        <h3 class="h5">Tréninky se sériemi</h3>
+                        <p class="text-secondary mb-0 small">
+                            Zapisujte opakování, váhu a RPE pro každou sadu. Dynamický formulář
+                            přidává a odebírá série kliknutím — bez čekání na server.
+                        </p>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card feature-card p-4">
+                        <div class="feature-icon">📋</div>
+                        <h3 class="h5">Šablony tréninků</h3>
+                        <p class="text-secondary mb-0 small">
+                            Uložte si Push/Pull/Legs nebo Upper/Lower jako šablonu a každý další
+                            trénink z ní spusťte jedním kliknutím — sady jsou předvyplněné.
+                        </p>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card feature-card p-4">
+                        <div class="feature-icon">📈</div>
+                        <h3 class="h5">Graf vývoje</h3>
+                        <p class="text-secondary mb-0 small">
+                            Vidíte progres cviku na časové ose — max. váha, celkový objem nebo
+                            odhad 1RM podle Epleyho vzorce. Interaktivní Chart.js.
+                        </p>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card feature-card p-4">
+                        <div class="feature-icon">🏆</div>
+                        <h3 class="h5">Osobní rekordy</h3>
+                        <p class="text-secondary mb-0 small">
+                            Aplikace si pamatuje tři druhy PR pro každý cvik: nejvyšší váha,
+                            největší objem v sadě, odhad 1RM. Rekordy jsou na detailu zlatým odznakem.
+                        </p>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card feature-card p-4">
+                        <div class="feature-icon">📄</div>
+                        <h3 class="h5">Export do PDF</h3>
+                        <p class="text-secondary mb-0 small">
+                            Stáhněte si jednotlivý trénink nebo měsíční přehled jako PDF —
+                            ideální pro tisk a sdílení s trenérem.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-5">
+            <div class="card demo-card p-4 p-md-5">
+                <div class="row align-items-center g-4">
+                    <div class="col-md-8">
+                        <h2 class="h4 mb-2">Vyzkoušejte bez registrace</h2>
+                        <p class="mb-3 text-secondary">
+                            Připravili jsme demo účet s ~18 tréninky za posledních šest týdnů,
+                            aby grafy a osobní rekordy okamžitě dávaly smysl.
+                        </p>
+                        <ul class="list-unstyled mb-0 small">
+                            <li class="mb-1">👤 E-mail: <code>demo@trainlog.local</code></li>
+                            <li class="mb-1">🔑 Heslo: <code>demo</code></li>
+                            <li class="text-secondary">Pro správu uživatelů a cviků zkuste <code>admin@trainlog.local</code> / <code>admin</code>.</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <a class="btn btn-primary btn-lg" href="{{ path('app_login') }}">Přihlásit se</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-5">
+            <div class="row g-4">
+                <div class="col-md-4 text-center">
+                    <div class="display-6 fw-bold text-primary">11</div>
+                    <div class="text-secondary small">svalových partií v knihovně</div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="display-6 fw-bold text-primary">3</div>
+                    <div class="text-secondary small">druhy osobních rekordů na cvik</div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="display-6 fw-bold text-primary">0&nbsp;kč</div>
+                    <div class="text-secondary small">žádná předplatná, žádné reklamy</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="landing-cta text-center">
+            <div class="container">
+                <h2 class="display-6 mb-3">Jdeme na to</h2>
+                <p class="lead mb-4">Vytvořte si účet za třicet vteřin a pojďte zapsat první trénink.</p>
+                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                    <a class="btn btn-primary btn-lg px-4" href="{{ path('app_register') }}">Registrovat se</a>
+                    <a class="btn btn-outline-light btn-lg px-4" href="{{ path('help_index') }}">Návod &rarr;</a>
+                </div>
+            </div>
+        </section>
     {% else %}
         <div class="mb-4">
             <h1 class="h3 mb-1">Vítejte zpět, {{ app.user.name }}.</h1>
