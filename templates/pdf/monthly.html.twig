@@ -1,0 +1,86 @@
+{% extends 'pdf/_layout.html.twig' %}
+
+{% block title %}TrainLog — měsíční přehled {{ year }}-{{ '%02d'|format(month) }}{% endblock %}
+
+{% block content %}
+    <h1>Měsíční přehled — {{ year }}-{{ '%02d'|format(month) }}</h1>
+    <div class="muted">{{ user.name }} · {{ user.email }}</div>
+
+    {% set totalVolume = 0 %}
+    {% set totalSets = 0 %}
+    {% set exerciseTotals = {} %}
+    {% for w in workouts %}
+        {% for s in w.sets %}
+            {% set totalVolume = totalVolume + s.volume %}
+            {% set totalSets = totalSets + 1 %}
+            {% if s.exercise %}
+                {% set key = s.exercise.name %}
+                {% set prev = exerciseTotals[key] ?? {sets: 0, volume: 0, maxWeight: 0} %}
+                {% set exerciseTotals = exerciseTotals|merge({(key): {
+                    sets: prev.sets + 1,
+                    volume: prev.volume + s.volume,
+                    maxWeight: (s.weightKgAsFloat > prev.maxWeight) ? s.weightKgAsFloat : prev.maxWeight,
+                }}) %}
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+
+    <div class="summary">
+        <strong>Celkem:</strong>
+        {{ workouts|length }} tréninků · {{ totalSets }} sad · objem {{ totalVolume|number_format(0, ',', ' ') }} kg
+    </div>
+
+    <h2>Tréninky</h2>
+    {% if workouts is empty %}
+        <p class="muted">Žádné tréninky v tomto měsíci.</p>
+    {% else %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Název</th>
+                    <th>Sady</th>
+                    <th>Objem (kg)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for w in workouts %}
+                    {% set wVolume = 0 %}
+                    {% for s in w.sets %}{% set wVolume = wVolume + s.volume %}{% endfor %}
+                    <tr>
+                        <td>{{ w.performedAt|date('Y-m-d') }}</td>
+                        <td>{{ w.name }}</td>
+                        <td>{{ w.sets|length }}</td>
+                        <td>{{ wVolume|number_format(0, ',', ' ') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    <h2>Souhrn podle cviků</h2>
+    {% if exerciseTotals is empty %}
+        <p class="muted">—</p>
+    {% else %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Cvik</th>
+                    <th>Sady</th>
+                    <th>Max váha (kg)</th>
+                    <th>Objem (kg)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for name, t in exerciseTotals %}
+                    <tr>
+                        <td>{{ name }}</td>
+                        <td>{{ t.sets }}</td>
+                        <td>{{ t.maxWeight }}</td>
+                        <td>{{ t.volume|number_format(0, ',', ' ') }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endblock %}

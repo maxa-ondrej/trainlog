@@ -1,0 +1,25 @@
+<div class="row g-2 align-items-end mb-2" data-collection-row>
+    <div class="col-md-4">
+        {{ form_label(set.exercise) }}
+        {{ form_widget(set.exercise) }}
+        {{ form_errors(set.exercise) }}
+    </div>
+    <div class="col-md-2">
+        {{ form_label(set.reps) }}
+        {{ form_widget(set.reps) }}
+        {{ form_errors(set.reps) }}
+    </div>
+    <div class="col-md-2">
+        {{ form_label(set.weightKg) }}
+        {{ form_widget(set.weightKg) }}
+        {{ form_errors(set.weightKg) }}
+    </div>
+    <div class="col-md-2">
+        {{ form_label(set.rpe) }}
+        {{ form_widget(set.rpe) }}
+        {{ form_errors(set.rpe) }}
+    </div>
+    <div class="col-md-2">
+        <button type="button" class="btn btn-outline-danger btn-sm w-100" data-action="collection#remove">Odebrat sadu</button>
+    </div>
+</div>

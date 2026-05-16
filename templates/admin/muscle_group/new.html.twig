@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TrainLog — nová svalová partie{% endblock %}
+
+{% block body %}
+    <p><a href="{{ path('admin_muscle_group_index') }}" class="text-decoration-none">← Svalové partie</a></p>
+    <h1 class="h3 mb-4">Nová svalová partie</h1>
+    <div class="row">
+        <div class="col-md-6">
+            {{ form_start(form) }}
+                {{ form_row(form.name) }}
+                <button type="submit" class="btn btn-primary">Vytvořit</button>
+                <a class="btn btn-outline-secondary" href="{{ path('admin_muscle_group_index') }}">Zrušit</a>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

@@ -28,7 +28,7 @@ class Exercise {
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'exercises')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $owner = null;
+    private User $owner;
 
     #[ORM\Column]
     private bool $isPublic = false;
@@ -68,10 +68,10 @@ class Exercise {
     }
 
     public function getOwner(): ?User {
-        return $this->owner;
+        return $this->owner ?? null;
     }
 
-    public function setOwner(?User $owner): void {
+    public function setOwner(User $owner): void {
         $this->owner = $owner;
     }
 

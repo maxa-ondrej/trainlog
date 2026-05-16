@@ -19,6 +19,7 @@
         "doctrine/doctrine-bundle": "^2.13",
         "doctrine/doctrine-migrations-bundle": "^3.4",
         "doctrine/orm": "^3.3",
+        "dompdf/dompdf": "^3.1",
         "symfony/asset": "^7.3",
         "symfony/asset-mapper": "^7.3",
         "symfony/console": "^7.3",
@@ -99,8 +100,9 @@
         ],
         "lint": "php-cs-fixer fix --dry-run --diff",
         "format": "php-cs-fixer fix",
-        "check": "phpstan analyse -c phpstan.neon",
+        "check": "phpstan analyse",
         "test": "phpunit",
+        "seed": "php bin/console doctrine:fixtures:load --group=demo --no-interaction",
         "qa": [
             "@lint",
             "@check",

@@ -22,7 +22,7 @@ class Workout {
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'workouts')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $user = null;
+    private User $user;
 
     #[ORM\Column(type: 'date_immutable')]
     #[Assert\NotNull]
@@ -59,10 +59,10 @@ class Workout {
     }
 
     public function getUser(): ?User {
-        return $this->user;
+        return $this->user ?? null;
     }
 
-    public function setUser(?User $user): void {
+    public function setUser(User $user): void {
         $this->user = $user;
     }
 

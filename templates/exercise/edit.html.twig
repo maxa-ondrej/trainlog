@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TrainLog — upravit cvik{% endblock %}
+
+{% block body %}
+    <p><a href="{{ path('exercise_show', {id: exercise.id}) }}" class="text-decoration-none">← Detail cviku</a></p>
+    <h1 class="h3 mb-4">Upravit „{{ exercise.name }}"</h1>
+    {% include 'exercise/_form.html.twig' with {form: form, submitLabel: 'Uložit', cancelUrl: path('exercise_show', {id: exercise.id})} %}
+{% endblock %}

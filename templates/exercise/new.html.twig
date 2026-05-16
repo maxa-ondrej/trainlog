@@ -1,0 +1,9 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TrainLog — nový cvik{% endblock %}
+
+{% block body %}
+    <p><a href="{{ path('exercise_index') }}" class="text-decoration-none">← Cviky</a></p>
+    <h1 class="h3 mb-4">Nový cvik</h1>
+    {% include 'exercise/_form.html.twig' with {form: form, submitLabel: 'Vytvořit', cancelUrl: path('exercise_index')} %}
+{% endblock %}

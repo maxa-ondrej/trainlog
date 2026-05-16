@@ -11,7 +11,3 @@ parameters:
         - tests
     symfony:
         containerXmlPath: var/cache/dev/App_KernelDevDebugContainer.xml
-    ignoreErrors:
-        -
-            identifier: argument.type
-            path: tests

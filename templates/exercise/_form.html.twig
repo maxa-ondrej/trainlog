@@ -1,0 +1,24 @@
+{{ form_start(form) }}
+    {{ form_row(form.name) }}
+    {{ form_row(form.description) }}
+
+    <div class="mb-3">
+        <label class="form-label">{{ form_label(form.muscleGroups) }}</label>
+        <div class="row">
+            {% for child in form.muscleGroups %}
+                <div class="col-sm-4 col-md-3">
+                    <div class="form-check">
+                        {{ form_widget(child, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(child, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {{ form_errors(form.muscleGroups) }}
+    </div>
+
+    {{ form_row(form.isPublic) }}
+
+    <button type="submit" class="btn btn-primary">{{ submitLabel }}</button>
+    <a class="btn btn-outline-secondary" href="{{ cancelUrl }}">Zrušit</a>
+{{ form_end(form) }}

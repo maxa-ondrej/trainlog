@@ -14,6 +14,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+use function sprintf;
+
 #[IsGranted('ROLE_ADMIN')]
 #[Route('/admin/exercises', name: 'admin_exercise_')]
 final class ExerciseController extends AbstractController {
