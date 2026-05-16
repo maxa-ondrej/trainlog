@@ -247,7 +247,7 @@ point. §2b only applies on a fresh DB. §13 is gravy.
 
 1. Screenshot the failing step + the Console / Network panel.
 2. Note the exact URL and what you clicked.
-3. File against the relevant task in `.tasks/` or open a new follow-up.
+3. Open a new follow-up against the repo.
 
 ## Cleanup
 
