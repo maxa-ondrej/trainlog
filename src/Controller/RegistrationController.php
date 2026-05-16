@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Role;
 use App\Entity\User;
 use App\Form\RegistrationFormType;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -20,6 +22,7 @@ final class RegistrationController extends AbstractController {
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $em,
+        UserRepository $users,
         Security $security,
     ): Response {
         if ($this->getUser() !== null) {
@@ -34,6 +37,11 @@ final class RegistrationController extends AbstractController {
             /** @var string $plainPassword */
             $plainPassword = $form->get('plainPassword')->getData();
             $user->setPassword($passwordHasher->hashPassword($user, $plainPassword));
+
+            if ($users->count([]) === 0) {
+                $user->setRole(Role::Admin);
+                $this->addFlash('info', 'Jste prvním uživatelem instance — automaticky jste získali roli administrátora.');
+            }
 
             $em->persist($user);
             $em->flush();
