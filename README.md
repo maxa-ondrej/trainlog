@@ -135,7 +135,6 @@ assets/
   styles/app.css
 
 migrations/                   # Doctrine migrace (zdroj pravdy o schématu)
-.tasks/                       # Roadmap (001–015), zachována pro historii
 ```
 
 ## Schéma — mapování názvů
