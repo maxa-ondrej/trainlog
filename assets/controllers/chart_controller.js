@@ -4,12 +4,29 @@ import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables);
 
 export default class extends Controller {
-    static targets = ['canvas', 'metric'];
+    static targets = ['canvas'];
     static values = {
         url: String,
     };
 
-    async connect() {
+    connect() {
+        // Stimulus may call connect() multiple times (Turbo cache restore,
+        // element morphing, etc.). Guard so we fetch + draw exactly once
+        // per controller lifetime.
+        if (this.loadPromise) {
+            return;
+        }
+        this.loadPromise = this.load();
+    }
+
+    disconnect() {
+        if (this.chart) {
+            this.chart.destroy();
+            this.chart = undefined;
+        }
+    }
+
+    async load() {
         const response = await fetch(this.urlValue, {
             headers: { Accept: 'application/json' },
             credentials: 'same-origin',
@@ -17,22 +34,19 @@ export default class extends Controller {
         if (!response.ok) {
             return;
         }
-        this.data = await response.json();
+        // `this.data` is a reserved getter on the Stimulus Controller base in
+        // Stimulus 3+. Name the cache something else.
+        this.chartData = await response.json();
         this.render('maxWeight');
     }
 
     switch(event) {
-        const metric = event.target.value;
-        this.render(metric);
+        this.render(event.target.value);
     }
 
     render(metric) {
-        if (!this.data) {
+        if (!this.chartData) {
             return;
-        }
-        const ctx = this.canvasTarget.getContext('2d');
-        if (this.chart) {
-            this.chart.destroy();
         }
         const labelText = {
             maxWeight: 'Max váha (kg)',
@@ -40,13 +54,22 @@ export default class extends Controller {
             estimated1rm: 'Odhad 1RM (kg)',
         }[metric] || metric;
 
+        if (this.chart) {
+            this.chart.data.labels = this.chartData.labels;
+            this.chart.data.datasets[0].label = labelText;
+            this.chart.data.datasets[0].data = this.chartData[metric];
+            this.chart.update();
+            return;
+        }
+
+        const ctx = this.canvasTarget.getContext('2d');
         this.chart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: this.data.labels,
+                labels: this.chartData.labels,
                 datasets: [{
                     label: labelText,
-                    data: this.data[metric],
+                    data: this.chartData[metric],
                     borderColor: 'rgb(13, 110, 253)',
                     backgroundColor: 'rgba(13, 110, 253, 0.15)',
                     tension: 0.2,
