@@ -32,7 +32,11 @@ jobs:
 
     env:
       APP_ENV: test
-      DATABASE_URL: "mysql://app:!ChangeMe!@127.0.0.1:3306/trainlog_test?serverVersion=10.11.2-MariaDB&charset=utf8mb4"
+      # The base DSN points at `trainlog`; Symfony's `when@test` (see
+      # config/packages/doctrine.yaml) appends `_test`, so the actual DB
+      # is `trainlog_test`. MARIADB_DATABASE above creates that DB and
+      # grants the `app` user access.
+      DATABASE_URL: "mysql://app:!ChangeMe!@127.0.0.1:3306/trainlog?serverVersion=10.11.2-MariaDB&charset=utf8mb4"
 
     steps:
       - name: Checkout repository
