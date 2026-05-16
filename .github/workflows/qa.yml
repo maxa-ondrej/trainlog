@@ -1,0 +1,86 @@
+name: QA
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  qa:
+    name: Lint, PHPStan, PHPUnit
+    runs-on: ubuntu-latest
+
+    services:
+      mariadb:
+        image: mariadb:10.11
+        env:
+          MARIADB_DATABASE: trainlog_test
+          MARIADB_USER: app
+          MARIADB_PASSWORD: '!ChangeMe!'
+          MARIADB_ROOT_PASSWORD: rootpw
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -prootpw --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+          --health-start-period=30s
+
+    env:
+      APP_ENV: test
+      DATABASE_URL: "mysql://app:!ChangeMe!@127.0.0.1:3306/trainlog_test?serverVersion=10.11.2-MariaDB&charset=utf8mb4"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: ctype, iconv, intl, pdo, pdo_mysql, mbstring
+          tools: composer:v2
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ steps.composer-cache.outputs.dir }}
+            vendor
+          key: ${{ runner.os }}-php-8.4-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-8.4-composer-
+
+      - name: Install dependencies
+        run: composer install --no-progress --prefer-dist
+
+      - name: Wait for MariaDB to be ready
+        run: |
+          for i in {1..30}; do
+            if mysqladmin ping -h 127.0.0.1 -P 3306 -uroot -prootpw --silent; then
+              echo "MariaDB is up"
+              exit 0
+            fi
+            echo "Waiting for MariaDB... ($i/30)"
+            sleep 2
+          done
+          echo "MariaDB did not become ready in time" >&2
+          exit 1
+
+      - name: Run database migrations (test env)
+        run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
+
+      - name: Load demo fixtures (test env)
+        run: php bin/console doctrine:fixtures:load --group=demo --no-interaction --env=test
+
+      - name: Run QA (lint + phpstan + phpunit)
+        run: composer qa
