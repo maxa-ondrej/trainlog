@@ -1,0 +1,247 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TrainLog — návod{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-lg-3 d-none d-lg-block">
+            <nav class="sticky-top" style="top: 1rem;">
+                <h2 class="h6 text-secondary text-uppercase">Obsah</h2>
+                <ul class="list-unstyled small">
+                    <li><a href="#uvod">Úvod</a></li>
+                    <li><a href="#registrace">Registrace a přihlášení</a></li>
+                    <li><a href="#cviky">Cviky</a></li>
+                    <li><a href="#treninky">Tréninky a série</a></li>
+                    <li><a href="#sablony">Šablony tréninků</a></li>
+                    <li><a href="#vyvoj">Graf vývoje</a></li>
+                    <li><a href="#pr">Osobní rekordy (PR)</a></li>
+                    <li><a href="#pdf">Export do PDF</a></li>
+                    <li><a href="#admin">Administrace</a></li>
+                    <li><a href="#faq">Časté otázky</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="col-lg-9">
+            <h1 class="h2 mb-4">Návod k použití TrainLogu</h1>
+
+            <section id="uvod" class="mb-5">
+                <h2 class="h4">Úvod</h2>
+                <p>
+                    <strong>TrainLog</strong> je webová aplikace pro vedení tréninkového deníku.
+                    Zapisujete si jednotlivé tréninky se sériemi (počet opakování, váha, RPE),
+                    sledujete vývoj výkonu na grafech a aplikace vám automaticky zvýrazňuje
+                    osobní rekordy.
+                </p>
+                <p class="text-secondary">
+                    Tento návod předpokládá, že máte aplikaci spuštěnou v prohlížeči
+                    a vidíte horní navigační lištu.
+                </p>
+            </section>
+
+            <section id="registrace" class="mb-5">
+                <h2 class="h4">1. Registrace a přihlášení</h2>
+                <ol>
+                    <li>V navigační liště klikněte na <strong>Registrace</strong>.</li>
+                    <li>Vyplňte e-mail, jméno a heslo (minimálně 8 znaků; heslo zadejte dvakrát).</li>
+                    <li>Po odeslání formuláře budete automaticky přihlášeni a přesměrováni
+                        na úvodní stránku.</li>
+                </ol>
+                <div class="alert alert-info">
+                    <strong>První uživatel = administrátor.</strong>
+                    První účet zaregistrovaný v čerstvé instalaci automaticky dostane roli
+                    <code>ROLE_ADMIN</code>. Další účty jsou běžní uživatelé; admin je může
+                    povýšit z <a href="{{ path('admin_user_index') }}">administrace uživatelů</a>.
+                </div>
+                <p>
+                    Pro pozdější přihlášení použijte tlačítko <strong>Přihlášení</strong> a zadejte
+                    e-mail s heslem. Odhlásit se můžete kdykoli tlačítkem <strong>Odhlásit</strong>
+                    v pravém horním rohu.
+                </p>
+            </section>
+
+            <section id="cviky" class="mb-5">
+                <h2 class="h4">2. Cviky</h2>
+                <p>
+                    Knihovna cviků je sdílená: vidíte všechny <em>veřejné</em> cviky (typicky
+                    seed admina) plus své <em>soukromé</em> cviky.
+                </p>
+                <h3 class="h6 mt-3">Založení vlastního cviku</h3>
+                <ol>
+                    <li>V navigaci klikněte na <a href="{{ path('exercise_index') }}">Cviky</a>.</li>
+                    <li>Vpravo nahoře <strong>+ Nový cvik</strong>.</li>
+                    <li>Vyplňte název, případně popis a zaškrtněte svalové partie,
+                        které cvik zapojuje (multi-select).</li>
+                    <li>Po uložení vás aplikace přesměruje na detail cviku.</li>
+                </ol>
+                <h3 class="h6 mt-3">Filtrování</h3>
+                <p>
+                    Na hlavním seznamu cviků můžete filtrovat podle jedné nebo více
+                    svalových partií. Pro zrušení filtru klikněte na <em>Zrušit filtr</em>.
+                </p>
+                <h3 class="h6 mt-3">Úprava / smazání</h3>
+                <p>
+                    Tlačítka <strong>Upravit</strong> a <strong>Smazat</strong> jsou dostupná
+                    jen pro cviky, kterých jste vlastníkem (nebo pro adminy). Smazat lze pouze
+                    cvik, který ještě není použit v žádné tréninkové sérii — pokud je, aplikace
+                    vám smazání zablokuje s vysvětlující hláškou.
+                </p>
+            </section>
+
+            <section id="treninky" class="mb-5">
+                <h2 class="h4">3. Tréninky a série</h2>
+                <p>
+                    Trénink = jedna návštěva posilovny. Skládá se z jedné nebo více
+                    <strong>sérií</strong> — každá série má cvik, počet opakování, váhu (kg)
+                    a volitelně RPE (Rate of Perceived Exertion 1–10).
+                </p>
+                <h3 class="h6 mt-3">Založení tréninku</h3>
+                <ol>
+                    <li>Otevřete <a href="{{ path('workout_index') }}">Tréninky</a>
+                        → <strong>+ Nový trénink</strong>.</li>
+                    <li>Vyplňte název (např. „Push 1"), datum a volitelně dobu trvání
+                        a poznámku.</li>
+                    <li>Klikejte na <strong>+ Přidat sadu</strong> a vyplňujte řádky —
+                        každý řádek je jedna série.</li>
+                    <li>Sériu lze odebrat tlačítkem <strong>Odebrat sadu</strong>.</li>
+                    <li>Po uložení vás aplikace přesměruje na detail tréninku;
+                        pořadí sérií se automaticky očísluje serverově.</li>
+                </ol>
+                <h3 class="h6 mt-3">Historie a filtry</h3>
+                <p>
+                    Seznam <a href="{{ path('workout_index') }}">Tréninky</a> ukazuje vaše
+                    tréninky od nejnovějšího. Můžete filtrovat podle data <em>od</em>/<em>do</em>
+                    a podle konkrétního cviku. Každý řádek zobrazuje datum, počet cviků,
+                    počet sérií a celkový objem (∑ reps × kg).
+                </p>
+                <h3 class="h6 mt-3">Detail tréninku</h3>
+                <p>
+                    Detail seskupuje série podle cviku, ukazuje pro každý cvik max. váhu,
+                    top sadu a celkový objem. Pokud nějaká série v tréninku překonala váš
+                    osobní rekord, dostane zlatý odznak <span class="badge text-bg-warning">🏆 PR</span>.
+                </p>
+            </section>
+
+            <section id="sablony" class="mb-5">
+                <h2 class="h4">4. Šablony tréninků</h2>
+                <p>
+                    Pokud trénujete podle pevného plánu (např. Push / Pull / Legs),
+                    můžete si uložit <strong>šablonu</strong> a každý další trénink z ní
+                    rychle spustit.
+                </p>
+                <ol>
+                    <li>V navigaci <a href="{{ path('template_index') }}">Šablony</a>
+                        → <strong>+ Nová šablona</strong>.</li>
+                    <li>Vyplňte stejně jako trénink — název, série s cviky a startovními váhami.</li>
+                    <li>Po uložení se objeví karta v seznamu šablon.</li>
+                    <li>Kliknutím na <strong>Spustit trénink</strong> aplikace vytvoří nový
+                        trénink s dnešním datem a předvyplněnými sériemi. Stačí upravit váhy/opakování
+                        a uložit.</li>
+                </ol>
+                <p class="text-secondary">
+                    Šablony se nezobrazují v běžné historii tréninků.
+                </p>
+            </section>
+
+            <section id="vyvoj" class="mb-5">
+                <h2 class="h4">5. Graf vývoje</h2>
+                <p>
+                    Na detailu libovolného cviku je tlačítko <strong>Vývoj</strong>.
+                    Otevře stránku s Chart.js grafem, který agreguje vaše série podle dne.
+                </p>
+                <p>Mezi metrikami přepínáte v záhlaví:</p>
+                <ul>
+                    <li><strong>Max váha</strong> — nejvyšší hmotnost v daném dni.</li>
+                    <li><strong>Objem</strong> — součet (reps × kg) přes všechny série v daném dni.</li>
+                    <li><strong>Odhad 1RM</strong> — Epley vzorec (<code>kg × (1 + reps/30)</code>),
+                        maximum přes série v dni. Užitečné pro porovnání sérií s různými opakováními.</li>
+                </ul>
+            </section>
+
+            <section id="pr" class="mb-5">
+                <h2 class="h4">6. Osobní rekordy (PR)</h2>
+                <p>
+                    Aplikace automaticky počítá tři typy osobních rekordů pro každou
+                    dvojici <em>uživatel × cvik</em>:
+                </p>
+                <ul>
+                    <li><strong>🏆 PR — váha</strong>: největší hmotnost na jedné sérii (bez ohledu na opakování).</li>
+                    <li><strong>🏆 PR — objem</strong>: největší <code>reps × kg</code> v jedné sérii.</li>
+                    <li><strong>🏆 PR — 1RM</strong>: největší odhad 1RM (Epley).</li>
+                </ul>
+                <p>
+                    Odznaky se objevují u příslušné série na detailu tréninku a v posledních
+                    sériích na detailu cviku. Počítají se průběžně při čtení (žádná samostatná tabulka),
+                    takže když smažete trénink, PR se automaticky přepočítají.
+                </p>
+            </section>
+
+            <section id="pdf" class="mb-5">
+                <h2 class="h4">7. Export do PDF</h2>
+                <ul>
+                    <li>Na detailu tréninku najdete tlačítko <strong>PDF</strong>, které stáhne
+                        kompletní zápis tréninku v tiskové podobě.</li>
+                    <li>Pro měsíční přehled otevřete URL ve tvaru
+                        <code>/workouts/export/{YYYY}-{MM}.pdf</code>, např.
+                        <code>/workouts/export/2026-05.pdf</code>. PDF obsahuje seznam tréninků,
+                        celkové statistiky a souhrn podle cviků.</li>
+                </ul>
+            </section>
+
+            <section id="admin" class="mb-5">
+                <h2 class="h4">8. Administrace</h2>
+                <p>
+                    Položka <strong>Administrace</strong> v navigaci je viditelná jen pro
+                    uživatele s rolí <code>ROLE_ADMIN</code>.
+                </p>
+                <h3 class="h6 mt-3">Uživatelé</h3>
+                <p>
+                    Na <a href="{{ path('admin_user_index') }}">/admin/users</a> vidíte všechny
+                    účty. Tlačítkem <strong>Povýšit / Degradovat</strong> přepínáte roli
+                    libovolného uživatele (svoji vlastní roli změnit nemůžete). Smazání účtu
+                    odstraní i jeho tréninky a sérií.
+                </p>
+                <h3 class="h6 mt-3">Cviky</h3>
+                <p>
+                    Na <a href="{{ path('admin_exercise_index') }}">/admin/exercises</a> vidíte
+                    všechny cviky všech uživatelů. Pro každý můžete:
+                </p>
+                <ul>
+                    <li><strong>Upravit</strong> — otevře formulář cviku, jako kdybyste byli
+                        vlastníkem (jako admin smíte upravit jakýkoli cvik).</li>
+                    <li><strong>Zveřejnit / Skrýt</strong> — přepíná, zda je cvik viditelný
+                        ostatním uživatelům jako <em>veřejný</em>.</li>
+                    <li><strong>Smazat</strong> — dostupné jen pro veřejné cviky, které
+                        nejsou použité v žádné tréninkové sérii.</li>
+                </ul>
+                <h3 class="h6 mt-3">Svalové partie</h3>
+                <p>
+                    Na <a href="{{ path('admin_muscle_group_index') }}">/admin/muscle-groups</a>
+                    přidáváte, přejmenováváte a mažete svalové partie (např. prsa, biceps, hýždě).
+                    Partii nelze smazat, pokud je přiřazena k některému cviku.
+                </p>
+            </section>
+
+            <section id="faq" class="mb-5">
+                <h2 class="h4">9. Časté otázky</h2>
+                <dl>
+                    <dt>Mohu sdílet svůj trénink s ostatními?</dt>
+                    <dd>Tréninky a šablony jsou vždy soukromé pro jejich vlastníka.
+                        Sdílet lze pouze cviky, a to když je admin označí jako veřejné.</dd>
+
+                    <dt>Co je RPE?</dt>
+                    <dd><em>Rate of Perceived Exertion</em> 1–10 — subjektivní odhad
+                        těžkosti série. Pole je nepovinné.</dd>
+
+                    <dt>Mohu měnit váhy zpětně?</dt>
+                    <dd>Ano, kdykoliv otevřete trénink → <strong>Upravit</strong>.
+                        Osobní rekordy se přepočítají při dalším načtení detailu.</dd>
+
+                    <dt>Co když se chci registrovat, ale formulář mě nechce přihlásit?</dt>
+                    <dd>Heslo musí mít minimálně 8 znaků a obě hesla se musí shodovat.
+                        E-mail musí být platný a unikátní.</dd>
+                </dl>
+            </section>
+        </div>
+    </div>
+{% endblock %}

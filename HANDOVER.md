@@ -1,285 +1,316 @@
-# Session Handover — 2026-05-16
+# Session Handover — 2026-05-16 (evening)
 
 ## Summary
 
-Bootstrapped a new Symfony 7.3 project for **TrainLog**, a training-diary web app
-(school semestral project; spec PDF at `/Users/ondrej.maxa/Downloads/zadani TrainLog.pdf`).
-Set up the project skeleton, QA tooling (PHPStan max + php-cs-fixer mirroring
-[shipmonk-linked-list](https://github.com/maxa-ondrej/shipmonk-linked-list)),
-all six Doctrine entities, a hello-world homepage that boots cleanly, and a
-`.tasks/` directory enumerating the remaining roadmap. Project lives at
-`/Users/ondrej.maxa/vse/webovky/semestralka/`. **Not yet a git repository.**
+Closed out the **TrainLog** roadmap from `.tasks/005` through `.tasks/015`,
+then iterated on quality, polish, and teacher feedback. The afternoon
+session ended at `7e86572` (frontend assets). This session adds 5 commits
+on top:
+
+```
+<head>  docs: in-app /navod guide, navbar wiring, smoke-test, fresh HANDOVER
+f2fd3b9 Polish + teacher feedback (auto-admin, home dashboard, SRI, env template)
+4447319 Add GitHub Actions QA workflow
+2a65452 Add functional + unit test coverage
+4f24d39 Implement TrainLog feature set (tasks 005–015)
+7e86572 Wire Bootstrap 5, Stimulus, Chart.js via AssetMapper  ← pre-existing
+```
+
+Project is grading-eligible per teacher (`zadání máte schválené`). The
+remaining items are nice-to-haves, not blockers.
 
 ## What Was Worked On & What Got Done
 
-| # | Item | Status |
+| Range | Scope | Outcome |
 |---|---|---|
-| 1 | Symfony 7 skeleton via `composer create-project symfony/skeleton` | done |
-| 2 | Project-local PHP 8.4 via `shell.nix` (Nix, not Homebrew — user choice) | done |
-| 3 | `composer.json` rewritten with full dep list + QA scripts (`lint`, `format`, `check`, `test`, `qa`) | done |
-| 4 | `phpstan.dist.neon` at level `max` with `phpstan-symfony` + `phpstan-doctrine` includes | done |
-| 5 | `.php-cs-fixer.dist.php` ported from shipmonk-linked-list, adapted to a Symfony project (excludes `var/`, `vendor/`, `public/bundles`, `migrations`, `config/bundles.php`, `config/preload.php`, `config/reference.php`) | done |
-| 6 | DB swapped Postgres → MariaDB in `.env`, `compose.yaml`, `compose.override.yaml` | done |
-| 7 | All six entities: `User`, `Exercise`, `MuscleGroup`, `Workout`, `WorkoutSet`, plus `Role` enum and matching repository stubs | done |
-| 8 | `HomeController` + `templates/home/index.html.twig` rendering "Hello, world!" | done — `GET /` returns `200 OK` |
-| 9 | `.tasks/001-…-015-….md` task files for remaining roadmap | done |
+| `.tasks/005`–`015` | Full feature set: muscle groups admin, exercise CRUD with voter, workout CRUD with embedded sets + Stimulus collection controller, templates with instantiator, progress chart with Chart.js, personal records, demo fixtures, README, wger import, PDF export | one big commit `4f24d39` |
+| `composer qa` | Pre-existing 7 PHPStan max errors paid down, php-cs-fixer clean, 17 PHPUnit tests / 66 assertions all green | bundled in `4f24d39` (entity changes) + `2a65452` (new tests) |
+| `.github/workflows/qa.yml` | CI runs `composer qa` against a MariaDB service container on every push / PR to `main` | `4447319` — never executed on real GitHub Actions yet (no remote configured) |
+| Polish + teacher feedback | Home dashboard with 5 recent workouts, first-user-auto-admin, admin Edit button on /admin/exercises, Bootstrap CDN SRI hash, `.env.local.dist` | `f2fd3b9` |
+| Docs | In-app `/navod` Twig guide (HelpController + sticky-TOC template), navbar wired to all routes including `Návod`, `/navod` public access, SMOKE_TEST.md checklist | `<head>` |
 
-Tasks **not** started in this session (planned in `.tasks/`):
+Side effects worth noting:
 
-- Initial DB migration (`.tasks/001`)
-- Auth: registration + login (`.tasks/002`) — still using skeleton's `users_in_memory` provider
-- Admin section / RBAC (`.tasks/003`)
-- Bootstrap 5 + Stimulus + Chart.js asset wiring (`.tasks/004`)
-- Muscle-group seed + admin (`.tasks/005`)
-- Exercise CRUD with filters (`.tasks/006`)
-- Workout CRUD (`.tasks/007`)
-- Workout templates (`.tasks/008`)
-- Workout history (`.tasks/009`)
-- Progress chart per exercise (`.tasks/010`)
-- Personal records (`.tasks/011`)
-- Demo fixtures (`.tasks/012`)
-- README (`.tasks/013`)
-- Optional wger.de import (`.tasks/014`)
-- Optional PDF export (`.tasks/015`)
+- **`composer seed` is the canonical setup step.** Truncate mode was
+  attempted but MariaDB rejects TRUNCATE on FK-referenced tables (error
+  1701); the script stayed on the DELETE-based purge which works for
+  back-to-back runs.
+- **`WorkoutSetRepository` is no longer `final`.** A test stub needed to
+  extend it in `tests/Service/PersonalRecordCalculatorTest.php`. Flagged
+  in case anyone wants to revisit by switching to a `final`-friendly
+  interface or a real-DB integration test.
+- **MariaDB still persists locally.** Same container as the morning
+  (`semestralka-database-1`, volume `semestralka_database_data`). The
+  `composer seed` resets it cleanly to demo state on demand.
+- **Demo creds (post-seed):** `admin@trainlog.local / admin`,
+  `demo@trainlog.local / demo` (has ~18 workouts), `hosta@trainlog.local
+  / demo`.
 
 ## What Worked and What Didn't
 
 ### Worked
 
-- **`nix-shell` for PHP 8.4**: created `shell.nix` pinning `php84` (8.4.21) +
-  composer + symfony-cli + nodejs_22, with the extensions Symfony+MariaDB need
-  (`pdo_mysql intl zip mbstring opcache sodium xsl gd bcmath`). All later
-  `composer` / `php` / `bin/console` invocations run as `nix-shell --run "..."`.
-- **Booting the dev server** via `php -S 127.0.0.1:8123 -t public public/index.php`
-  inside the nix-shell, with `run_in_background: true`. The standard
-  `until curl -sf … ; do sleep 1; done` loop confirmed readiness.
-- **php-cs-fixer auto-fix on skeleton files**: the skeleton emits files without
-  `declare(strict_types=1)` and with Symfony brace style; running
-  `vendor/bin/php-cs-fixer fix` once normalised them to the shipmonk style
-  (declare strict, same-line braces, arrow functions where possible).
+- **Parallel agents for disjoint scopes.** Tasks 13/14/16/17 (PHPStan
+  debt / tests / polish / spec audit) and later 15/18/19 (CI / home
+  dashboard / README mapping) were dispatched as parallel general-purpose
+  agents with explicit file-scope contracts. Zero merge conflicts on
+  reintegration. Bumped throughput ~4×.
+- **`composer qa` as a single gate.** With the PHPStan max debt paid
+  down, every commit since `4f24d39` ends with a green `composer qa`.
+  The CI workflow can therefore just call `composer qa` without bespoke
+  pipeline logic.
+- **`#[Argument]` and `#[Option]` attributes** on `app:exercise:import-wger`.
+  Same modern pattern as the morning's `app:user:promote` — PHPStan max
+  narrows types automatically. No `configure()` boilerplate.
+- **WgerClient via `HttpClientInterface` + `MockHttpClient`.** Unit test
+  asserts JSON parsing without ever hitting wger.de. Idempotency in the
+  command itself (skip if name already exists).
+- **`assets/controllers/collection_controller.js`** for dynamic
+  CollectionType rows. Pure Stimulus, ~30 lines, supports add/remove and
+  re-numbers nothing client-side (server re-numbers positions on save).
+- **`PersonalRecordCalculator::badgeMapForWorkout()`** — single pass per
+  exercise; returns `setId → ['váha', 'objem', '1RM']` map for badge
+  rendering. Works on read (no denormalised PR table) — fine at
+  student-scale data volumes.
+- **dompdf + DejaVu Sans.** Czech diacritics render correctly out of the
+  box. The `PdfRenderer` service is one trivial Twig→PDF wrapper; both
+  exports (`/workouts/{id}/export.pdf`, `/workouts/export/{YYYY}-{MM}.pdf`)
+  share it.
 
-### Didn't work
+### Didn't work / had to work around
 
-- **Symfony 7.2.x pin** — initial `composer.json` pinned `symfony/* 7.2.*`, but
-  Composer refused with security advisories `PKSA-365x-2zjk-pt47` and
-  `PKSA-b35n-565h-rs4q` blocking `symfony/http-foundation`. Fixed by switching
-  all Symfony constraints to `^7.3` and the Flex `extra.symfony.require` to
-  `^7.3`.
-- **Homebrew suggestion** — I started typing `brew install php` and got
-  interrupted; user wanted Nix instead. Don't reach for `brew` on this machine.
-- **Stray `enable_native_lazy_objects: true`** — accidentally added to
-  `config/packages/doctrine.yaml`; reverted in the same step.
-- **First php-cs-fixer run failed** with `config/reference.php` (the
-  auto-generated Symfony config reference, 1500+ lines) producing a diff.
-  Fixed by adding it to the `notPath` exclusion list.
+- **`--purge-with-truncate` on `composer seed`** fails on MariaDB with
+  FK error 1701. Stayed on DELETE-based purge.
+- **`composer.json` had `"check": "phpstan analyse -c phpstan.neon"`**
+  but the repo file is `phpstan.dist.neon`. Worked locally only by
+  accident; was about to break CI. Changed to bare `phpstan analyse`.
+- **Stateless CSRF** still blocks `curl`-driven POST testing. The new
+  WebTestCase suites use the DOM crawler, which handles it correctly.
+  HTTP-level smoke testing in the dev loop has to be GET-only.
+- **`Doctrine\ORM\Tools\Pagination\Paginator<T>` generics** are
+  unsatisfiable in this codebase without `assert()` / `@var` (both
+  forbidden by the project's PHPStan policy). Refactored
+  `ExerciseRepository` to expose `findVisiblePage()` + `countVisible()`
+  instead of a Paginator return.
 
 ## Key Decisions Made and Why
 
-1. **PHP 8.4 via project-local `shell.nix`, not a global install.** User runs
-   Determinate Nix and explicitly rejected Homebrew. A project-local shell.nix
-   means the project ships with its own PHP version + extensions; no machine
-   pollution. Tradeoff: every PHP/composer command must be prefixed
-   `nix-shell --run "..."`.
-2. **Symfony 7.3 over 7.2**, see above re: security advisories.
-3. **MariaDB over Postgres.** Spec says MySQL/MariaDB. Swapped the skeleton's
-   Postgres compose service + DSN.
-4. **`is_template: bool` flag on `Workout`** instead of a separate template
-   table. The spec lists exactly 6 tables; templates fit cleanly as a flag on
-   `workout`, matching the spec literally. New workouts can be cloned from
-   templates (see `.tasks/008`).
-5. **`Role` as a PHP enum + derived `getRoles()`.** Spec says "role" (singular).
-   Stored as `enumType: Role::class` (single column). `getRoles()` returns
-   `['ROLE_ADMIN', 'ROLE_USER']` for admins so Symfony Security's hierarchical
-   expectations still work.
-6. **`WorkoutSet.position` instead of `order`** — `order` is a reserved SQL
-   keyword, friction not worth it.
-7. **`weightKg` and `rpe` as DECIMAL strings**, not floats. Doctrine returns
-   `decimal` as string by default; preserves precision, dodges float-equality
-   landmines. Added `getWeightKgAsFloat()` and `getVolume()` helpers.
-8. **Repository stubs created upfront** — `repositoryClass: …` attributes on
-   entities make Doctrine resolve those classes; missing classes fail at first
-   `getRepository()` call. Empty stubs unblock task 001 (migration generation)
-   and 006/007 (where queries will live).
-9. **`.tasks/NNN-name.md` numbering scheme** — three-digit prefix lets us insert
-   later (`016`, `017`…) without renumbering. Each file has a fixed shape:
-   *Title — Acceptance criteria — Touched files — Depends on*.
-10. **AssetMapper (no Node toolchain in production).** Skeleton already
-    includes it; tasks build on that. Chart.js + Bootstrap pulled via
-    `importmap:require`. CDN for Bootstrap CSS is the suggested shortcut.
+1. **Uninitialized typed properties for non-null FK columns.** Picked
+   over constructor-promoted requirement to avoid touching ~10 callsites
+   for `new Exercise() / new Workout() / new WorkoutSet()`. Setters
+   guarantee they're populated before flush; reading before set returns
+   `null` via `$this->prop ?? null`. Minimum blast radius.
+2. **`PersonalRecord` computed at read time.** No denormalised table.
+   Cost: every detail-page render does one extra query per distinct
+   exercise. Benefit: PRs auto-recompute on delete/edit with no
+   bookkeeping. Fine for student-scale data; revisit if `n > 10⁴`.
+3. **Epley estimate as the 1RM proxy.** `weight × (1 + reps/30)`. Cited
+   widely; close enough for the chart's purpose without a config knob.
+4. **`composer seed` uses DELETE purge, not TRUNCATE.** See above —
+   TRUNCATE is FK-incompatible on MariaDB. DELETE is slower but correct.
+5. **First registered user auto-promoted to ROLE_ADMIN.** Removes the
+   CLI-only initial-admin path that the teacher flagged. Implemented in
+   `RegistrationController::register` with `UserRepository::count([]) === 0`.
+   The `app:user:promote` command stays as a maintenance fallback.
+6. **`/navod` is public.** Anonymous users can read the guide so they
+   can decide if the app is what they want before registering. Listed
+   in `security.yaml` access_control as `PUBLIC_ACCESS`.
+7. **README written before `composer seed` script tested.** When CI was
+   added, the bad `phpstan analyse -c phpstan.neon` line was caught
+   by the CI-authoring agent. Fixed up in commit `f2fd3b9`. Lesson:
+   always run `composer qa` literally — not just the individual
+   components — before claiming green.
+8. **Five thematic commits** (this session) rather than per-task
+   commits (morning style). Per-task would have required ~18 commits
+   with significant partial-staging gymnastics. The thematic groupings
+   read cleaner in `git log --oneline`:
+   - tasks 005–015 (feature set)
+   - functional + unit tests
+   - GitHub Actions CI
+   - polish + teacher feedback
+   - in-app guide + smoke-test + handover
+9. **In-app `/navod` instead of `NAVOD.md`** at the user's request. A
+   real Twig page is reachable from the navbar by both authenticated
+   and anonymous users; markdown would have lived in the repo only.
 
 ## Lessons Learned & Gotchas
 
-- **`nix-shell` cold-starts**. First `nix-shell --run` after editing
-  `shell.nix` re-evaluates and may take a minute. Subsequent invocations are
-  fast (cached store paths). The Determinate Nix install here is version
-  3.15.2 / nix 2.33.1.
-- **PHP `composer.json` `config.platform.php`** is set to `8.4.21` (matches
-  nix-shell). If shell.nix is bumped to a newer 8.4.x, bump this too or
-  composer will resolve against the wrong target.
-- **`auto-scripts` in `composer.json`** currently invokes
-  `cache:clear`, `assets:install %PUBLIC_DIR%`, `importmap:install`. The
-  last one is safe even before `importmap.php` is fully populated.
-- **php-cs-fixer warning**: it runs on all PHP files in the repo. Always
-  re-check `notPath` after adding generated files (e.g. future
-  `config/reference.php` regenerations after `cache:warmup`).
-- **Doctrine + the `user` table name** — `User.php` uses `#[ORM\Table(name: '`user`')]`
-  (backtick-escaped) because `user` is reserved in Postgres and a soft-reserved
-  word in some MySQL contexts. Backticks survive in DDL.
-- **`enumType: Role::class`** is a Doctrine 3 feature. Already on the project
-  (composer requires `doctrine/orm: ^3.3`).
-- **Skeleton ships a `tests/bootstrap.php`** that uses `(new Dotenv())->bootEnv(...)`.
-  php-cs-fixer rewrote it to `new Dotenv()->bootEnv(...)` (PHP 8.4 new-without-parens).
-  Looks weird but is valid.
-- **Background dev server** — `kill %1` doesn't reach the nix-shell child;
-  used `pkill -f "php -S 127.0.0.1:8123"`. The background task ID
-  `bztotqz4h` reported `failed exit 144` after kill — that's expected.
-- **The project is not a git repo yet.** `git init` was deliberately not run.
-  Do this early in the next session if the user wants version control.
+- **PHPStan-doctrine's `doctrine.associationType`** wants the *PHP*
+  property type to match the column's nullability *exactly*. A
+  non-nullable column needs a non-nullable property (PHP-typed). Setter
+  signature doesn't matter; only the property does.
+- **`@var` annotation override** is banned by the project's PHPStan
+  policy. So is `assert()` for narrowing. Either fix the upstream type,
+  refactor to make the type obvious, or accept slightly weaker generics.
+- **`final` on `WorkoutSetRepository`** blocked stubbing in
+  `PersonalRecordCalculatorTest`. PHPUnit can't mock final classes.
+  Removed `final`. Alternative would have been an integration test that
+  hits the real DB — overkill for what's a pure-aggregation calculator.
+- **Symfony 7.3 `CollectionType` allow_add prototype.** The Stimulus
+  controller reads `data-collection-prototype-value` and replaces
+  `__name__` with an incrementing index. Make sure the prototype value
+  is HTML-escaped (`|e('html_attr')` in Twig) — otherwise nested form
+  attributes break the outer attribute parsing.
+- **Spec PDF / migration column-name divergence.** Czech spec calls the
+  columns `datum`, `poznámka`, `doba_trvání`; migration uses English
+  (`performed_at`, `note`, `duration_minutes`). README has a mapping
+  table so a grader doesn't ding the divergence. Semantics identical.
+- **`--purge-with-truncate` ≠ free lunch on MariaDB.** MariaDB rejects
+  TRUNCATE on FK-referenced tables (error 1701). Use DELETE.
+- **CI workflow not yet validated.** `.github/workflows/qa.yml` looks
+  right but has never run on real GitHub Actions — no remote configured.
+  First push will reveal env quirks (MariaDB health-check timing,
+  composer install timing, etc.).
 
 ## Current State
 
 ### Working
 
-- `nix-shell --run "php --version"` → PHP 8.4.21
-- `nix-shell --run "composer install"` → all deps installed, lockfile present
-- `nix-shell --run "php -S 127.0.0.1:8123 -t public public/index.php"`
-  + `curl http://127.0.0.1:8123/` → 200 OK with the TrainLog homepage
-- `nix-shell --run "vendor/bin/php-cs-fixer fix"` → clean (no diffs)
-- All entities + repositories load (Twig + AssetMapper + UX-Turbo + Stimulus
-  bundle wired by Flex; importmap renders in the homepage HTML)
-- Web profiler + Symfony web debug toolbar are active in dev
+- `git log --oneline` shows the 5 new commits on `main`.
+- `nix-shell --run "composer qa"` → green:
+  - php-cs-fixer dry-run: 0 diffs
+  - PHPStan max: 0 errors
+  - PHPUnit: 17 tests / 66 assertions / 0 failures
+- `nix-shell --run "php bin/console lint:twig templates/"` → 29 files OK.
+- `composer seed` → admin + 2 users + 11 muscle groups + 10 exercises +
+  18 workouts + 198 sets.
+- `php -S 127.0.0.1:8123 -t public public/index.php` serves the app;
+  all 24+ routes resolve correctly (smoke-tested at HTTP level).
+- Dev server is **currently running in background** (PID owned by the
+  shell that started it; stop with `pkill -f "php -S 127.0.0.1:8123"`).
 
 ### Broken / partial
 
-- **Security still uses `users_in_memory`**. There is no `/login`,
-  `/register`, or `/logout` route. `User` entity exists but is not connected
-  to the security provider. (Task `.tasks/002`.)
-- **No DB exists** — `.env` points at MariaDB on `127.0.0.1:3306` but no
-  `docker compose up` has been run, and no migrations exist in
-  `migrations/`. Anything that hits the DB will fail. (Task `.tasks/001`.)
-- **PHPStan not yet executed** at level max — config is in place but never
-  run; expect some warnings on first run (typically around the
-  `?User` getters that return null only before persistence).
-- **No tests beyond the empty `tests/` directory.**
+- **`.github/workflows/qa.yml` never executed on real GitHub Actions.**
+  No remote configured. Will need to be `git remote add origin …` +
+  `git push -u origin main` before CI does anything.
+- **Browser smoke test in progress.** SMOKE_TEST.md exists with a
+  ~13-section checklist; user was running through it when this commit
+  set landed. Outcome not yet reported back. If anything failed, it'll
+  surface as new tasks.
+- **No `git tag` for the submission point.** Once CI is green and the
+  browser smoke test passes, a `v1.0-submission` tag would mark the
+  graded snapshot.
 
 ### Temporary hacks / TODOs
 
-- None hidden in code. Everything provisional is captured either here or in
-  `.tasks/*.md`.
+- `WorkoutSetRepository` is non-`final` to enable test stubbing
+  (`f2fd3b9`'s base commit, technically `4f24d39`). Revisit if you want
+  the class final again.
+- Bootstrap CDN SRI hash is hard-pinned to `5.3.8`. If you upgrade
+  Bootstrap, recompute the hash:
+  `curl https://cdn.jsdelivr.net/npm/bootstrap@<ver>/dist/css/bootstrap.min.css |
+   openssl dgst -sha384 -binary | openssl base64 -A`.
+- `templates/admin/index.html.twig` still has `Cviky` linking to
+  `admin_exercise_index` — fine, but a future refactor that splits user
+  vs admin exercise lists should revisit.
 
 ## Clear Next Steps
 
-In order of dependency:
+In rough priority order, after the user finishes the in-flight browser
+smoke test:
 
-1. **`git init` + initial commit** (5 min). The project is currently a pile of
-   untracked files. Suggest `.gitignore` already has the Symfony defaults.
-2. **`.tasks/001` — initial migration** (15 min):
-   ```bash
-   nix-shell --run "docker compose up -d database"
-   nix-shell --run "php bin/console doctrine:database:create"
-   nix-shell --run "php bin/console make:migration"
-   nix-shell --run "php bin/console doctrine:migrations:migrate -n"
-   nix-shell --run "php bin/console doctrine:schema:validate"
-   ```
-3. **`.tasks/002` — auth**. Swap `users_in_memory` for entity provider on
-   `App\Entity\User` with `property: email`, add `RegistrationController`,
-   `SecurityController`, login template. Use `make:registration-form`
-   + `make:auth` as starting points (MakerBundle is installed).
-4. **`.tasks/004` — frontend assets** in parallel with auth so the navbar +
-   forms are styled (`importmap:require bootstrap @popperjs/core chart.js`).
-5. **`.tasks/003` — admin section** once auth + role checks are in place.
-6. **`.tasks/005` → `.tasks/007`** for the core domain CRUD.
-7. **`.tasks/008` → `.tasks/011`** for the higher-value features (templates,
-   history, chart, PRs).
-8. **`.tasks/012` fixtures** so the chart from `.tasks/010` has data to render.
-9. **`.tasks/013` README** last, when commands are stable.
-10. **Optional**: `.tasks/014` wger import, `.tasks/015` PDF export.
-
-Before merging anything, run `composer qa` (`lint` + `check` + `test`) and
-expect to iterate on PHPStan errors at level max — that bar is intentional.
+1. **Configure a git remote and push.** `git remote add origin <url>` +
+   `git push -u origin main`. Watch the GitHub Actions run. Fix any CI
+   quirks that surface (likely a 1-line tweak to `qa.yml`).
+2. **Tag a submission snapshot.** Once CI is green and the browser test
+   passes, `git tag -a v1.0-submission -m "Semester project submission"`
+   + `git push origin v1.0-submission`.
+3. **Optional: functional tests for the new flows.** Auto-admin and
+   `/navod` aren't yet covered by `tests/Functional/`. ~30 min.
+   - `SecurityControllerTest::testFirstUserBecomesAdmin` — register on
+     an empty user table, assert role + flash.
+   - `HelpControllerTest::testGuideRendersAnonymouslyAndLoggedIn`.
+4. **Optional: spec polish from #17.** Implementation matches the
+   spec's required scope; the items flagged (extra 1RM metric on the
+   progress chart, three PR kinds vs the spec's vague "personal
+   records") are value-adds, not gaps.
 
 ## Important Files Map
 
+### New this session
+
 ```
-/Users/ondrej.maxa/vse/webovky/semestralka/
-├── shell.nix                          # Nix dev-shell: PHP 8.4.21 + composer + symfony-cli + node22
-├── composer.json                      # Custom name (maxa-ondrej/trainlog), email maxo00@vse.cz,
-│                                      # platform.php=8.4.21, scripts: lint/format/check/test/qa
-├── phpstan.dist.neon                  # level: max, includes phpstan-symfony + phpstan-doctrine,
-│                                      # ignores argument.type errors in tests/
-├── .php-cs-fixer.dist.php             # Shipmonk-linked-list rules: @PhpCsFixer, @PHP84Migration,
-│                                      # @PhpCsFixer:risky, @PHP82Migration:risky, same-line braces,
-│                                      # global namespace imports. Excludes generated configs.
-├── .env                                # DATABASE_URL → mariadb 10.11 on :3306/trainlog
-├── compose.yaml                       # MariaDB 10.11 service
-├── compose.override.yaml              # Exposes 3306:3306 in dev
-│
-├── src/Entity/
-│   ├── Role.php                       # enum Role: User | Admin (string-backed)
-│   ├── User.php                       # UserInterface + PasswordAuthenticatedUserInterface,
-│   │                                  # email (unique), name, role enum, createdAt,
-│   │                                  # OneToMany Workouts, OneToMany Exercises (as owner)
-│   ├── MuscleGroup.php                # name (unique), ManyToMany Exercise (inverse side)
-│   ├── Exercise.php                   # name, description, owner→User, isPublic,
-│   │                                  # ManyToMany MuscleGroup (owning, table exercise_muscle_group),
-│   │                                  # OneToMany WorkoutSet
-│   ├── Workout.php                    # user, performedAt (date_immutable), name, note,
-│   │                                  # durationMinutes (nullable int), isTemplate,
-│   │                                  # OneToMany WorkoutSet cascade persist+remove orphanRemoval,
-│   │                                  # ordered by position ASC
-│   └── WorkoutSet.php                 # workout, exercise, position, reps, weightKg (DECIMAL string),
-│                                      # rpe (DECIMAL 3,1 nullable), getVolume() helper
-│
-├── src/Repository/
-│   ├── UserRepository.php             # ServiceEntityRepository<User> — stub
-│   ├── ExerciseRepository.php         # stub
-│   ├── MuscleGroupRepository.php      # stub
-│   ├── WorkoutRepository.php          # stub
-│   └── WorkoutSetRepository.php       # stub
-│
-├── src/Controller/
-│   └── HomeController.php             # GET / → home/index.html.twig
-│
-├── templates/
-│   ├── base.html.twig                 # lang=cs, viewport meta, importmap('app'), 🏋️ favicon
-│   └── home/index.html.twig           # "Hello, world!" landing
-│
-├── config/packages/
-│   ├── doctrine.yaml                  # auto_mapping App entities at src/Entity, naming
-│   │                                  # strategy underscore_number_aware, savepoints on
-│   ├── security.yaml                  # *** still users_in_memory — switch in task 002 ***
-│   └── (others — skeleton defaults)
-│
-└── .tasks/
-    ├── 001-initial-migration.md
-    ├── 002-auth-registration.md
-    ├── 003-admin-rbac.md
-    ├── 004-frontend-assets.md
-    ├── 005-muscle-groups.md
-    ├── 006-exercise-crud.md
-    ├── 007-workout-crud.md
-    ├── 008-workout-templates.md
-    ├── 009-workout-history.md
-    ├── 010-progress-chart.md
-    ├── 011-personal-records.md
-    ├── 012-fixtures.md
-    ├── 013-readme.md
-    ├── 014-wger-import.md
-    └── 015-pdf-export.md
+src/Controller/ExerciseController.php
+src/Controller/ExerciseProgressController.php
+src/Controller/TemplateController.php
+src/Controller/WorkoutController.php
+src/Controller/WorkoutExportController.php
+src/Controller/HelpController.php
+src/Controller/Admin/MuscleGroupController.php
+src/Command/ImportWgerExercisesCommand.php
+src/DataFixtures/{Admin,Exercise,MuscleGroup,User,Workout}Fixtures.php
+src/Form/{Exercise,MuscleGroup,Workout,WorkoutSet}Type.php
+src/Security/Voter/{Exercise,Workout}Voter.php
+src/Service/PdfRenderer.php
+src/Service/PersonalRecordCalculator.php
+src/Service/WorkoutTemplateInstantiator.php
+src/Service/Wger/WgerClient.php
+assets/controllers/{chart,collection}_controller.js
+templates/admin/muscle_group/{index,new,edit}.html.twig
+templates/exercise/{_form,index,new,edit,show,progress}.html.twig
+templates/workout/{_form,_set_row,index,new,edit,show}.html.twig
+templates/template/{index,new}.html.twig
+templates/pdf/{_layout,workout,monthly}.html.twig
+templates/help/index.html.twig
+tests/Functional/{FixturesWebTestCase,SecurityControllerTest,ExerciseControllerTest,WorkoutControllerTest}.php
+tests/Service/{PersonalRecordCalculatorTest,WorkoutTemplateInstantiatorTest,Wger/WgerClientTest}.php
+.github/workflows/qa.yml
+.env.local.dist
+README.md
+SMOKE_TEST.md
 ```
 
-### Entry points
+### Modified this session
 
-- HTTP: `public/index.php` (front controller)
-- CLI: `bin/console` (Symfony console — always via `nix-shell --run "php bin/console …"`)
-- Spec PDF: `/Users/ondrej.maxa/Downloads/zadani TrainLog.pdf` (Czech)
-- Style reference: <https://github.com/maxa-ondrej/shipmonk-linked-list>
-  (`.php-cs-fixer.dist.php`, `phpstan.neon`, `composer.json` — all read at
-  start of session and cached at `/tmp/trainlog-ref/`)
+```
+src/Entity/{Exercise,Workout,WorkoutSet,User,MuscleGroup}.php   # PHPStan-max compliance + uninitialized typed props
+src/Repository/{Exercise,Workout,WorkoutSet}Repository.php      # paginated visible / user history / progress aggregation
+src/Controller/HomeController.php                               # dashboard with 5 recent workouts
+src/Controller/RegistrationController.php                       # first-user auto-admin
+src/Controller/Admin/{Exercise,User}Controller.php              # minor (cs-fixer)
+templates/_navbar.html.twig                                     # all nav links wired + /navod entry
+templates/admin/exercises/index.html.twig                       # Upravit button per row
+templates/admin/index.html.twig                                 # link to /admin/muscle-groups
+templates/base.html.twig                                        # Bootstrap CDN SRI hash
+templates/home/index.html.twig                                  # dashboard variant
+config/packages/security.yaml                                   # /navod PUBLIC_ACCESS
+composer.json + composer.lock                                   # dompdf, seed script, fixed check script
+phpstan.dist.neon                                               # removed unused tests/ ignore
+tests/bootstrap.php                                             # dropped always-true method_exists branch
+importmap.php                                                   # transitive deps pulled by 005-015 work
+```
+
+### Entry points & quick commands
+
+```bash
+# Dev server
+nix-shell --run "php -S 127.0.0.1:8123 -t public public/index.php"
+
+# Console
+nix-shell --run "php bin/console <cmd>"
+
+# QA bundle (green as of <head>)
+nix-shell --run "composer qa"
+
+# Reset to demo state
+nix-shell --run "composer seed"
+
+# Promote a user to admin (CLI fallback if you didn't get auto-admin)
+nix-shell --run "php bin/console app:user:promote <email>"
+```
+
+### Demo credentials (post `composer seed`)
+
+| Role | E-mail | Heslo |
+|---|---|---|
+| admin | `admin@trainlog.local` | `admin` |
+| user (has ~18 workouts, 6 weeks) | `demo@trainlog.local` | `demo` |
+| user (empty, for 403 cross-user tests) | `hosta@trainlog.local` | `demo` |
 
 ### Author / metadata
 
+Unchanged:
 - `composer.json` author: **Ondřej Maxa, maxo00@vse.cz**
-- User signed-in identity in this environment: `ondrej.maxa@shipmonk.com`
-  (different from the project author email — use `maxo00@vse.cz` in
-  project files, **not** the shipmonk address).
+- Spec PDF: `/Users/ondrej.maxa/Downloads/zadani TrainLog.pdf`
+- Style reference: <https://github.com/maxa-ondrej/shipmonk-linked-list>
