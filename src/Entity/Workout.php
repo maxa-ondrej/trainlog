@@ -12,6 +12,8 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
+use function count;
+
 #[ORM\Entity(repositoryClass: WorkoutRepository::class)]
 #[ORM\Table(name: 'workout')]
 class Workout {
@@ -118,7 +120,71 @@ class Workout {
         }
     }
 
+    /** Required by Symfony Forms `by_reference: false` collection mapping. */
     public function removeSet(WorkoutSet $set): void {
         $this->sets->removeElement($set);
+    }
+
+    /**
+     * Re-attach every set to this workout and assign sequential positions (1..n)
+     * in iteration order. Call before flushing a form-submitted Workout.
+     */
+    public function renumberSets(): void {
+        $position = 1;
+        foreach ($this->sets as $set) {
+            $set->setWorkout($this);
+            $set->setPosition($position++);
+        }
+    }
+
+    /**
+     * Groups sets by their exercise, preserving the first-seen order. Each entry
+     * holds the Exercise plus the list of its sets in original order.
+     *
+     * @return array<int, array{exercise: Exercise, sets: list<WorkoutSet>}>
+     */
+    public function getSetsByExercise(): array {
+        $byExercise = [];
+        foreach ($this->sets as $set) {
+            $exercise = $set->getExercise();
+            if ($exercise === null) {
+                continue;
+            }
+            $id = $exercise->getId();
+            if ($id === null) {
+                continue;
+            }
+            if (!isset($byExercise[$id])) {
+                $byExercise[$id] = ['exercise' => $exercise, 'sets' => []];
+            }
+            $byExercise[$id]['sets'][] = $set;
+        }
+
+        return $byExercise;
+    }
+
+    public function getTotalVolume(): float {
+        $total = 0.0;
+        foreach ($this->sets as $set) {
+            $total += $set->getVolume();
+        }
+
+        return $total;
+    }
+
+    public function getDistinctExerciseCount(): int {
+        $seen = [];
+        foreach ($this->sets as $set) {
+            $exercise = $set->getExercise();
+            if ($exercise === null) {
+                continue;
+            }
+            $id = $exercise->getId();
+            if ($id !== null) {
+                $seen[$id] = true;
+            }
+        }
+
+        return count($seen);
     }
 }

@@ -1,4 +1,5 @@
 {% extends 'base.html.twig' %}
+{% import '_macros.html.twig' as ui %}
 
 {% block title %}TrainLog — uživatelé{% endblock %}
 
@@ -37,11 +38,7 @@
                                         {{ user.role.value == 'ROLE_ADMIN' ? 'Degradovat' : 'Povýšit' }}
                                     </button>
                                 </form>
-                                <form method="post" action="{{ path('admin_user_delete', {id: user.id}) }}" class="d-inline"
-                                      onsubmit="return confirm('Opravdu smazat uživatele {{ user.email|e('js') }}?');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('admin_user_delete_' ~ user.id) }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">Smazat</button>
-                                </form>
+                                {{ ui.delete_form(path('admin_user_delete', {id: user.id}), 'admin_user_delete_' ~ user.id, 'Opravdu smazat uživatele ' ~ user.email ~ '?') }}
                             {% else %}
                                 <span class="text-secondary">(vy)</span>
                             {% endif %}

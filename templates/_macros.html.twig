@@ -1,0 +1,11 @@
+{# Reusable Twig macros. Import with `{% import '_macros.html.twig' as ui %}`. #}
+
+{# Inline POST form with CSRF + JS confirm + "Smazat" button.
+   `disabled` is for UX hint only; the server still rejects invalid deletes. #}
+{% macro delete_form(action, token_id, confirm, disabled = false) %}
+    <form method="post" action="{{ action }}" class="d-inline"
+          onsubmit="return confirm('{{ confirm|e('js') }}');">
+        <input type="hidden" name="_token" value="{{ csrf_token(token_id) }}">
+        <button type="submit" class="btn btn-sm btn-outline-danger"{% if disabled %} disabled{% endif %}>Smazat</button>
+    </form>
+{% endmacro %}

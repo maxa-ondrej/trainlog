@@ -40,43 +40,13 @@ final class ExerciseProgressController extends AbstractController {
         /** @var User $user */
         $user = $this->getUser();
 
-        $sets = $this->sets->findAllForExerciseByUser($user, $exercise);
-
-        /** @var array<string, array{maxWeight: float, volume: float, est1rm: float}> $byDate */
-        $byDate = [];
-        foreach ($sets as $set) {
-            $workout = $set->getWorkout();
-            if ($workout === null) {
-                continue;
-            }
-            $date = $workout->getPerformedAt()->format('Y-m-d');
-            $weight = $set->getWeightKgAsFloat();
-            $reps = $set->getReps();
-            $epley = $weight * (1 + $reps / 30);
-
-            if (!isset($byDate[$date])) {
-                $byDate[$date] = ['maxWeight' => 0, 'volume' => 0, 'est1rm' => 0];
-            }
-            if ($weight > $byDate[$date]['maxWeight']) {
-                $byDate[$date]['maxWeight'] = $weight;
-            }
-            $byDate[$date]['volume'] += $weight * $reps;
-            if ($epley > $byDate[$date]['est1rm']) {
-                $byDate[$date]['est1rm'] = round($epley, 2);
-            }
-        }
-
-        ksort($byDate);
-        $labels = array_keys($byDate);
-        $maxWeight = array_map(static fn ($r) => $r['maxWeight'], array_values($byDate));
-        $volume = array_map(static fn ($r) => $r['volume'], array_values($byDate));
-        $estimated1rm = array_map(static fn ($r) => $r['est1rm'], array_values($byDate));
+        $rows = $this->sets->findProgressFor($user, $exercise);
 
         return $this->json([
-            'labels' => $labels,
-            'maxWeight' => $maxWeight,
-            'volume' => $volume,
-            'estimated1rm' => $estimated1rm,
+            'labels' => array_column($rows, 'date'),
+            'maxWeight' => array_column($rows, 'maxWeight'),
+            'volume' => array_column($rows, 'volume'),
+            'estimated1rm' => array_column($rows, 'estimated1rm'),
         ]);
     }
 }

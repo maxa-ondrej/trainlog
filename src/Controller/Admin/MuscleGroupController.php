@@ -72,7 +72,7 @@ final class MuscleGroupController extends AbstractController {
             throw $this->createAccessDeniedException('Invalid CSRF token.');
         }
 
-        if (!$muscleGroup->getExercises()->isEmpty()) {
+        if ($muscleGroup->getExercises()->count() > 0) {
             $this->addFlash('error', sprintf('Svalovou partii „%s" nelze smazat, je přiřazena k cvikům.', $muscleGroup->getName()));
 
             return $this->redirectToRoute('admin_muscle_group_index');
