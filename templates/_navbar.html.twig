@@ -12,10 +12,13 @@
                 </li>
                 {% if app.user %}
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Cviky</a>
+                        <a class="nav-link{% if app.request.get('_route') starts with 'exercise_' %} active{% endif %}" href="{{ path('exercise_index') }}">Cviky</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Tréninky</a>
+                        <a class="nav-link{% if app.request.get('_route') starts with 'workout_' %} active{% endif %}" href="{{ path('workout_index') }}">Tréninky</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link{% if app.request.get('_route') starts with 'template_' %} active{% endif %}" href="{{ path('template_index') }}">Šablony</a>
                     </li>
                 {% endif %}
                 {% if is_granted('ROLE_ADMIN') %}
@@ -23,6 +26,9 @@
                         <a class="nav-link{% if app.request.get('_route') starts with 'admin_' %} active{% endif %}" href="{{ path('admin_home') }}">Administrace</a>
                     </li>
                 {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link{% if app.request.get('_route') starts with 'help_' %} active{% endif %}" href="{{ path('help_index') }}">Návod</a>
+                </li>
             </ul>
             <ul class="navbar-nav">
                 {% if app.user %}
