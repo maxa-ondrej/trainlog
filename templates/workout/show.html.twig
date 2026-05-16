@@ -1,4 +1,5 @@
 {% extends 'base.html.twig' %}
+{% import '_macros.html.twig' as ui %}
 
 {% block title %}TrainLog — {{ workout.name }}{% endblock %}
 
@@ -20,11 +21,7 @@
                 <a class="btn btn-sm btn-outline-secondary" href="{{ path('workout_edit', {id: workout.id}) }}">Upravit</a>
             {% endif %}
             {% if is_granted('WORKOUT_DELETE', workout) %}
-                <form method="post" action="{{ path('workout_delete', {id: workout.id}) }}" class="d-inline"
-                      onsubmit="return confirm('Opravdu smazat trénink „{{ workout.name|e('js') }}"?');">
-                    <input type="hidden" name="_token" value="{{ csrf_token('workout_delete_' ~ workout.id) }}">
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Smazat</button>
-                </form>
+                {{ ui.delete_form(path('workout_delete', {id: workout.id}), 'workout_delete_' ~ workout.id, 'Opravdu smazat trénink „' ~ workout.name ~ '"?') }}
             {% endif %}
         </div>
     </div>
@@ -32,9 +29,6 @@
     {% if workout.note %}
         <div class="card card-body mb-4">{{ workout.note|nl2br }}</div>
     {% endif %}
-
-    {% set workoutTotalVolume = 0 %}
-    {% for s in workout.sets %}{% set workoutTotalVolume = workoutTotalVolume + s.volume %}{% endfor %}
 
     {% if byExercise is empty %}
         <p class="text-secondary"><em>Žádné série.</em></p>
@@ -96,6 +90,6 @@
             </div>
         {% endfor %}
 
-        <div class="text-secondary">Celkový objem tréninku: <strong>{{ workoutTotalVolume|number_format(0, ',', ' ') }} kg</strong></div>
+        <div class="text-secondary">Celkový objem tréninku: <strong>{{ workout.totalVolume|number_format(0, ',', ' ') }} kg</strong></div>
     {% endif %}
 {% endblock %}

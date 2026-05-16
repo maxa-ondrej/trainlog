@@ -14,9 +14,6 @@
         <p>{{ workout.note }}</p>
     {% endif %}
 
-    {% set totalVolume = 0 %}
-    {% for s in workout.sets %}{% set totalVolume = totalVolume + s.volume %}{% endfor %}
-
     {% for entry in byExercise %}
         {% set ex = entry.exercise %}
         {% set sets = entry.sets %}
@@ -53,6 +50,6 @@
     {% endfor %}
 
     <div class="summary">
-        <strong>Celkový objem tréninku:</strong> {{ totalVolume|number_format(0, ',', ' ') }} kg
+        <strong>Celkový objem tréninku:</strong> {{ workout.totalVolume|number_format(0, ',', ' ') }} kg
     </div>
 {% endblock %}

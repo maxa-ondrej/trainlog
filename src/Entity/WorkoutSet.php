@@ -101,4 +101,9 @@ class WorkoutSet {
     public function getVolume(): float {
         return $this->reps * $this->getWeightKgAsFloat();
     }
+
+    /** Estimated 1RM by the Epley formula: weight × (1 + reps/30). */
+    public function getEstimated1Rm(): float {
+        return $this->getWeightKgAsFloat() * (1 + $this->reps / 30);
+    }
 }

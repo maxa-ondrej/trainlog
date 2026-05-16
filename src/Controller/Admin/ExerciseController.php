@@ -22,7 +22,7 @@ final class ExerciseController extends AbstractController {
     #[Route('', name: 'index', methods: ['GET'])]
     public function index(ExerciseRepository $exercises): Response {
         return $this->render('admin/exercises/index.html.twig', [
-            'exercises' => $exercises->findBy([], ['name' => 'ASC']),
+            'exercises' => $exercises->findAllWithOwnerAndMuscleGroups(),
         ]);
     }
 
@@ -52,7 +52,7 @@ final class ExerciseController extends AbstractController {
             return $this->redirectToRoute('admin_exercise_index');
         }
 
-        if (!$exercise->getWorkoutSets()->isEmpty()) {
+        if ($exercise->getWorkoutSets()->count() > 0) {
             $this->addFlash('error', sprintf('Cvik „%s" nelze smazat, je použit v tréninkových sériích.', $exercise->getName()));
 
             return $this->redirectToRoute('admin_exercise_index');

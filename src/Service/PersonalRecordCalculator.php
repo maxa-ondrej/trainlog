@@ -25,27 +25,7 @@ final class PersonalRecordCalculator {
      * @return array<string, WorkoutSet>
      */
     public function findPersonalRecords(User $user, Exercise $exercise): array {
-        $records = [];
-        foreach ($this->sets->findAllForExerciseByUser($user, $exercise) as $set) {
-            if ($set->getReps() <= 0) {
-                continue;
-            }
-            if (!isset($records[self::KIND_WEIGHT]) || $set->getWeightKgAsFloat() > $records[self::KIND_WEIGHT]->getWeightKgAsFloat()) {
-                $records[self::KIND_WEIGHT] = $set;
-            }
-            if (!isset($records[self::KIND_VOLUME]) || $set->getVolume() > $records[self::KIND_VOLUME]->getVolume()) {
-                $records[self::KIND_VOLUME] = $set;
-            }
-            $epleyA = $set->getWeightKgAsFloat() * (1 + $set->getReps() / 30);
-            $epleyB = isset($records[self::KIND_1RM])
-                ? $records[self::KIND_1RM]->getWeightKgAsFloat() * (1 + $records[self::KIND_1RM]->getReps() / 30)
-                : 0.0;
-            if ($epleyA > $epleyB) {
-                $records[self::KIND_1RM] = $set;
-            }
-        }
-
-        return $records;
+        return $this->pickPrsFromHistory($this->sets->findAllForExerciseByUser($user, $exercise));
     }
 
     /**
@@ -61,24 +41,18 @@ final class PersonalRecordCalculator {
             return [];
         }
 
-        $byExercise = [];
-        foreach ($workout->getSets() as $set) {
-            $ex = $set->getExercise();
-            if ($ex === null || $ex->getId() === null) {
-                continue;
-            }
-            $byExercise[$ex->getId()] ??= $ex;
+        $byExercise = $workout->getSetsByExercise();
+        if ($byExercise === []) {
+            return [];
         }
 
+        $historyByExercise = $this->sets->findAllForExercisesByUserGrouped($user, array_keys($byExercise));
+
         $out = [];
-        foreach ($byExercise as $exercise) {
-            $prs = $this->findPersonalRecords($user, $exercise);
-            foreach ($prs as $kind => $set) {
+        foreach ($byExercise as $exId => $entry) {
+            foreach ($this->pickPrsFromHistory($historyByExercise[$exId] ?? []) as $kind => $set) {
                 $id = $set->getId();
-                if ($id === null) {
-                    continue;
-                }
-                if ($workout === $set->getWorkout()) {
+                if ($id !== null && $workout === $set->getWorkout()) {
                     $out[$id] ??= [];
                     $out[$id][] = $kind;
                 }
@@ -86,5 +60,30 @@ final class PersonalRecordCalculator {
         }
 
         return $out;
+    }
+
+    /**
+     * @param iterable<WorkoutSet> $sets
+     *
+     * @return array<string, WorkoutSet>
+     */
+    private function pickPrsFromHistory(iterable $sets): array {
+        $records = [];
+        foreach ($sets as $set) {
+            if ($set->getReps() <= 0) {
+                continue;
+            }
+            if (!isset($records[self::KIND_WEIGHT]) || $set->getWeightKgAsFloat() > $records[self::KIND_WEIGHT]->getWeightKgAsFloat()) {
+                $records[self::KIND_WEIGHT] = $set;
+            }
+            if (!isset($records[self::KIND_VOLUME]) || $set->getVolume() > $records[self::KIND_VOLUME]->getVolume()) {
+                $records[self::KIND_VOLUME] = $set;
+            }
+            if (!isset($records[self::KIND_1RM]) || $set->getEstimated1Rm() > $records[self::KIND_1RM]->getEstimated1Rm()) {
+                $records[self::KIND_1RM] = $set;
+            }
+        }
+
+        return $records;
     }
 }

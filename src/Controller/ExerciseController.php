@@ -157,7 +157,7 @@ final class ExerciseController extends AbstractController {
             throw $this->createAccessDeniedException('Invalid CSRF token.');
         }
 
-        if (!$exercise->getWorkoutSets()->isEmpty()) {
+        if ($exercise->getWorkoutSets()->count() > 0) {
             $this->addFlash('error', sprintf('Cvik „%s" nelze smazat, je použit v tréninkových sériích.', $exercise->getName()));
 
             return $this->redirectToRoute('exercise_show', ['id' => $exercise->getId()]);

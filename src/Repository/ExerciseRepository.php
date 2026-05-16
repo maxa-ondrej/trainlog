@@ -81,4 +81,32 @@ final class ExerciseRepository extends ServiceEntityRepository {
 
         return $out;
     }
+
+    /**
+     * Loads every exercise with `owner` and `muscleGroups` eager-fetched, ordered
+     * by name. Intended for the admin list page; do not use for user-facing lists
+     * (no visibility filtering).
+     *
+     * @return list<Exercise>
+     */
+    public function findAllWithOwnerAndMuscleGroups(): array {
+        $result = $this->createQueryBuilder('e')
+            ->leftJoin('e.owner', 'o')->addSelect('o')
+            ->leftJoin('e.muscleGroups', 'mg')->addSelect('mg')
+            ->orderBy('e.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+        if (!is_array($result)) {
+            return [];
+        }
+
+        $out = [];
+        foreach ($result as $row) {
+            if ($row instanceof Exercise) {
+                $out[] = $row;
+            }
+        }
+
+        return $out;
+    }
 }

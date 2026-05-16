@@ -1,4 +1,5 @@
 {% extends 'base.html.twig' %}
+{% import '_macros.html.twig' as ui %}
 
 {% block title %}TrainLog — svalové partie{% endblock %}
 
@@ -24,11 +25,12 @@
                         <td>{{ mg.exercises|length }}</td>
                         <td class="text-end">
                             <a class="btn btn-sm btn-outline-primary" href="{{ path('admin_muscle_group_edit', {id: mg.id}) }}">Upravit</a>
-                            <form method="post" action="{{ path('admin_muscle_group_delete', {id: mg.id}) }}" class="d-inline"
-                                  onsubmit="return confirm('Opravdu smazat partii „{{ mg.name|e('js') }}"?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('admin_muscle_group_delete_' ~ mg.id) }}">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" {{ mg.exercises|length > 0 ? 'disabled' : '' }}>Smazat</button>
-                            </form>
+                            {{ ui.delete_form(
+                                path('admin_muscle_group_delete', {id: mg.id}),
+                                'admin_muscle_group_delete_' ~ mg.id,
+                                'Opravdu smazat partii „' ~ mg.name ~ '"?',
+                                mg.exercises|length > 0
+                            ) }}
                         </td>
                     </tr>
                 {% else %}

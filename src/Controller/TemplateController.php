@@ -44,12 +44,7 @@ final class TemplateController extends AbstractController {
 
         if ($form->isSubmitted() && $form->isValid()) {
             $template->setIsTemplate(true);
-
-            $position = 1;
-            foreach ($template->getSets() as $set) {
-                $set->setPosition($position++);
-                $set->setWorkout($template);
-            }
+            $template->renumberSets();
 
             $em->persist($template);
             $em->flush();

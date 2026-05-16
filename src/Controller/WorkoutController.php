@@ -22,7 +22,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-use function is_array;
 use function is_string;
 use function sprintf;
 
@@ -39,12 +38,8 @@ final class WorkoutController extends AbstractController {
         $exerciseId = $request->query->getInt('exercise');
         $exercise = $exerciseId > 0 ? $exercises->find($exerciseId) : null;
 
-        $list = $workouts->createUserHistoryQuery($user, $from, $to, $exercise)
-            ->getQuery()
-            ->getResult();
-
         return $this->render('workout/index.html.twig', [
-            'workouts' => is_array($list) ? $list : [],
+            'workouts' => $workouts->findUserHistoryWithSets($user, $from, $to, $exercise),
             'from' => $from,
             'to' => $to,
             'exercise' => $exercise,
@@ -92,25 +87,9 @@ final class WorkoutController extends AbstractController {
             throw $this->createAccessDeniedException();
         }
 
-        $byExercise = [];
-        foreach ($workout->getSets() as $set) {
-            $ex = $set->getExercise();
-            if ($ex === null) {
-                continue;
-            }
-            $exId = $ex->getId();
-            if ($exId === null) {
-                continue;
-            }
-            if (!isset($byExercise[$exId])) {
-                $byExercise[$exId] = ['exercise' => $ex, 'sets' => []];
-            }
-            $byExercise[$exId]['sets'][] = $set;
-        }
-
         return $this->render('workout/show.html.twig', [
             'workout' => $workout,
-            'byExercise' => $byExercise,
+            'byExercise' => $workout->getSetsByExercise(),
             'prMap' => $prCalc->badgeMapForWorkout($workout),
         ]);
     }
@@ -153,11 +132,7 @@ final class WorkoutController extends AbstractController {
             $isTemplateRaw = $form->get('isTemplate')->getData();
             $workout->setIsTemplate(is_string($isTemplateRaw) && $isTemplateRaw === '1');
 
-            $position = 1;
-            foreach ($workout->getSets() as $set) {
-                $set->setPosition($position++);
-                $set->setWorkout($workout);
-            }
+            $workout->renumberSets();
 
             if ($isNew) {
                 $em->persist($workout);

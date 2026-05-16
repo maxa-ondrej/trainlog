@@ -15,7 +15,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-use function is_array;
 use function sprintf;
 
 #[IsGranted('ROLE_USER')]
@@ -30,19 +29,9 @@ final class WorkoutExportController extends AbstractController {
             throw $this->createAccessDeniedException();
         }
 
-        $byExercise = [];
-        foreach ($workout->getSets() as $set) {
-            $ex = $set->getExercise();
-            if ($ex === null || $ex->getId() === null) {
-                continue;
-            }
-            $byExercise[$ex->getId()] ??= ['exercise' => $ex, 'sets' => []];
-            $byExercise[$ex->getId()]['sets'][] = $set;
-        }
-
         $pdf = $this->pdf->render('pdf/workout.html.twig', [
             'workout' => $workout,
-            'byExercise' => $byExercise,
+            'byExercise' => $workout->getSetsByExercise(),
         ]);
 
         return $this->binaryPdfResponse($pdf, sprintf('workout-%d.pdf', $workout->getId() ?? 0));
@@ -60,12 +49,8 @@ final class WorkoutExportController extends AbstractController {
         $from = new DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month))->setTime(0, 0);
         $to = $from->modify('first day of next month')->modify('-1 second');
 
-        $list = $workouts->createUserHistoryQuery($user, $from, $to)
-            ->getQuery()
-            ->getResult();
-
         $pdf = $this->pdf->render('pdf/monthly.html.twig', [
-            'workouts' => is_array($list) ? $list : [],
+            'workouts' => $workouts->findUserHistoryWithSets($user, $from, $to),
             'year' => $year,
             'month' => $month,
             'user' => $user,
