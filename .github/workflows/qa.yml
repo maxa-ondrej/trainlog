@@ -86,5 +86,10 @@ jobs:
       - name: Load demo fixtures (test env)
         run: php bin/console doctrine:fixtures:load --group=demo --no-interaction --env=test
 
+      - name: Warm dev cache (PHPStan reads the dev container XML)
+        env:
+          APP_ENV: dev
+        run: php bin/console cache:warmup --env=dev
+
       - name: Run QA (lint + phpstan + phpunit)
         run: composer qa
