@@ -3,18 +3,54 @@
 {% block title %}TrainLog — vítejte{% endblock %}
 
 {% block body %}
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <h1 class="display-5 mb-3">🏋️ TrainLog</h1>
-            <p class="lead">Webová aplikace pro vedení tréninkového deníku.</p>
-            {% if not app.user %}
+    {% if not app.user %}
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h1 class="display-5 mb-3">🏋️ TrainLog</h1>
+                <p class="lead">Webová aplikace pro vedení tréninkového deníku.</p>
                 <p>
                     <a class="btn btn-primary" href="{{ path('app_register') }}">Začít zdarma</a>
                     <a class="btn btn-outline-secondary" href="{{ path('app_login') }}">Přihlásit se</a>
                 </p>
-            {% else %}
-                <p>Vítejte zpět, {{ app.user.name }}.</p>
-            {% endif %}
+            </div>
         </div>
-    </div>
+    {% else %}
+        <div class="mb-4">
+            <h1 class="h3 mb-1">Vítejte zpět, {{ app.user.name }}.</h1>
+            <p class="text-muted mb-0">Posledních 5 tréninků</p>
+        </div>
+
+        {% if recentWorkouts is empty %}
+            <div class="alert alert-info">
+                Zatím nemáte žádné tréninky. <a href="{{ path('workout_new') }}" class="alert-link">Vytvořte si první trénink</a>
+                nebo začněte ze <a href="{{ path('template_index') }}" class="alert-link">šablony</a>.
+            </div>
+        {% else %}
+            <div class="list-group mb-4">
+                {% for w in recentWorkouts %}
+                    {% set totalVolume = 0 %}
+                    {% for s in w.sets %}
+                        {% set totalVolume = totalVolume + s.volume %}
+                    {% endfor %}
+                    <a href="{{ path('workout_show', {id: w.id}) }}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <div>
+                                <div class="fw-semibold">{{ w.name }}</div>
+                                <small class="text-muted">{{ w.performedAt|date('Y-m-d') }}</small>
+                            </div>
+                            <div class="text-end">
+                                <div><span class="badge bg-secondary">{{ w.sets|length }} sad</span></div>
+                                <small class="text-muted">{{ totalVolume|number_format(0, ',', ' ') }} kg</small>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="d-flex gap-2">
+            <a href="{{ path('workout_new') }}" class="btn btn-primary">+ Nový trénink</a>
+            <a href="{{ path('workout_index') }}" class="btn btn-outline-secondary">Zobrazit celou historii</a>
+        </div>
+    {% endif %}
 {% endblock %}
