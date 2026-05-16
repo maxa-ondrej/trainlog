@@ -1,4 +1,24 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      # Image is built with APP_ENV=prod baked in — do not override to dev/test
+      # here, the warmed cache would be stale.
+      APP_ENV: prod
+      APP_DEBUG: "0"
+      APP_SECRET: ${APP_SECRET:?set APP_SECRET in the environment (openssl rand -hex 32)}
+      # serverVersion must match the major.minor.patch format DBAL expects.
+      DATABASE_URL: "mysql://${MARIADB_USER:-app}:${MARIADB_PASSWORD:-!ChangeMe!}@database:3306/${MARIADB_DATABASE:-trainlog}?serverVersion=${MARIADB_SERVER_VERSION:-10.11.6-MariaDB}&charset=utf8mb4"
+      APP_RUN_MIGRATIONS: ${APP_RUN_MIGRATIONS:-1}
+      APP_LOAD_FIXTURES: ${APP_LOAD_FIXTURES:-0}
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-8080}:80"
+
 ###> doctrine/doctrine-bundle ###
   database:
     image: mariadb:${MARIADB_VERSION:-10.11}
