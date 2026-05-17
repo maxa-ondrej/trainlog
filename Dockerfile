@@ -63,7 +63,8 @@ ENV APP_ENV=prod \
     APP_SECRET=build-time-placeholder \
     DATABASE_URL="mysql://placeholder:placeholder@127.0.0.1:3306/placeholder?serverVersion=10.11.6-MariaDB&charset=utf8mb4"
 
-RUN php bin/console asset-map:compile --no-debug \
+RUN php bin/console importmap:install --no-debug \
+ && php bin/console asset-map:compile --no-debug \
  && php bin/console cache:clear --env=prod --no-debug \
  && mkdir -p var/cache var/log var/share \
  && chown -R www-data:www-data var public/assets
