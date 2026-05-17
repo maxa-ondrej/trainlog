@@ -33,7 +33,10 @@ if [[ "${APP_RUN_MIGRATIONS:-1}" == "1" ]]; then
 fi
 
 if [[ "${APP_LOAD_FIXTURES:-0}" == "1" ]]; then
-    php bin/console doctrine:fixtures:load --no-interaction --append || true
+    # Purges (via DELETE; --purge-with-truncate breaks on FK constraints in
+    # MariaDB) then reloads. Opting into APP_LOAD_FIXTURES is a destructive
+    # demo-reset, never a partial seed.
+    php bin/console doctrine:fixtures:load --no-interaction
 fi
 
 # Cache was warmed at build time; re-warm only if it was wiped (e.g. mounted volume).
