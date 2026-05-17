@@ -2,6 +2,13 @@
 framework:
     secret: '%env(APP_SECRET)%'
 
+    # Trust X-Forwarded-* headers from the immediate peer. Set the env var to
+    # the proxy's IP / subnet (or the literal "REMOTE_ADDR" to trust whatever
+    # is connecting — safe when the container is reachable ONLY through the
+    # proxy, which is the typical Docker-behind-Caddy/Cloudflare case).
+    trusted_proxies: '%env(TRUSTED_PROXIES)%'
+    trusted_headers: ['x-forwarded-for', 'x-forwarded-host', 'x-forwarded-proto', 'x-forwarded-port', 'x-forwarded-prefix']
+
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 

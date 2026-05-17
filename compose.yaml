@@ -9,6 +9,9 @@ services:
       APP_ENV: prod
       APP_DEBUG: "0"
       APP_SECRET: ${APP_SECRET:?set APP_SECRET in the environment (openssl rand -hex 32)}
+      # Container is only reachable through the reverse proxy in real
+      # deployments, so the immediate peer is always trusted.
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES:-127.0.0.1,REMOTE_ADDR}
       # serverVersion must match the major.minor.patch format DBAL expects.
       DATABASE_URL: "mysql://${MARIADB_USER:-app}:${MARIADB_PASSWORD:-!ChangeMe!}@database:3306/${MARIADB_DATABASE:-trainlog}?serverVersion=${MARIADB_SERVER_VERSION:-10.11.6-MariaDB}&charset=utf8mb4"
       APP_RUN_MIGRATIONS: ${APP_RUN_MIGRATIONS:-1}
